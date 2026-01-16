@@ -1,0 +1,16 @@
+# Ignore all node_modules folders anywhere in the project
+node_modules/
+
+# Ignore environment variable files
+.env
+.env.local
+.env.development
+.env.production
+
+# Optional: ignore build outputs
+dist/
+build/
+
+# Optional: OS / editor files
+.DS_Store
+.vscode/
