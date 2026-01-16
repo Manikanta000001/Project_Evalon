@@ -60,5 +60,5 @@ Evalon follows a client-server architecture:
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/evalon.git
+git clone https://github.com/your-username/Project_Evalon.git
 cd evalon
