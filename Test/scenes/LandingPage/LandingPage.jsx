@@ -54,7 +54,7 @@ export default function CapsuleMediaLanding() {
       </header>
 
       {/* Hero Section */}
-      <main className="flex flex-col md:flex-row items-center justify-between flex-1 px-10 py-16 max-w-7xl mx-auto">
+      <main className="flex flex-col md:flex-row items-center justify-between flex-1 px-10 py-16 max-w-7xl mx-auto -mt-6">
         {/* Left Content */}
         <motion.div
           className="md:w-1/2"
@@ -63,8 +63,8 @@ export default function CapsuleMediaLanding() {
           transition={{ duration: 1 }}
         >
           <h2 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight">
-            Automated <span className="text-blue-600">Exam Generation</span>{" "}
-            Intelligent evaluation
+            Academic <span className="text-blue-600">Examination &</span>{" "}
+            Assessment System
           </h2>
           <p className="mt-6 text-lg text-gray-600">
             Evalon combines smart automation with insightful analytics to help
@@ -92,6 +92,10 @@ export default function CapsuleMediaLanding() {
             className="w-[400px] md:w-[480px] drop-shadow-2xl"
           />
         </motion.div>
+        
+
+        
+        
       </main>
     </div>
   );
