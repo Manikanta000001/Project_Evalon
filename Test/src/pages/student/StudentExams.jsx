@@ -1,32 +1,54 @@
 import React from "react";
-import { useOutletContext } from "react-router-dom";
+import { useOutletContext, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Clock, CheckCircle, BookOpen, PlayCircle } from "lucide-react";
 
 export default function StudentExams() {
   const { dark: isDarkMode } = useOutletContext() || {};
+  const [exams, setExams] = useState([]);
+  const navigate = useNavigate();
+  // checking avaliable exams
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const token = localStorage.getItem("token");
 
-  const upcoming = [
-    { id: 1, title: "Physics Unit Test", date: "Jan 24, 2026", time: "10:00 AM", duration: "45 mins" },
-    { id: 2, title: "Math Algebra Quiz", date: "Jan 27, 2026", time: "09:00 AM", duration: "30 mins" },
-  ];
+        const res = await fetch("http://localhost:5000/api/exams/available", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  const active = [
-    { id: 3, title: "Biology MCQ Test", endsIn: "28 mins left" },
-  ];
+        const data = await res.json();
+        setExams(data);
+      } catch (err) {
+        console.error("Failed to fetch exams", err);
+      }
+    };
 
-  const completed = [
-    { id: 4, title: "Chemistry Basics", score: "18/25", status: "Checked" },
-    { id: 5, title: "English Grammar Test", score: "22/25", status: "Checked" },
-  ];
+    fetchExams();
+  }, []);
+  console.log(exams);
+
+  const now = new Date();
+
+  const active = exams.filter(
+    (e) => new Date(e.startAt) <= now && new Date(e.endAt) >= now,
+  );
+
+  const upcoming = exams.filter((e) => new Date(e.startAt) > now);
+
+  const completed = exams.filter((e) => new Date(e.endAt) < now);
 
   return (
     <div className="space-y-8">
-
       {/* ---------- Active Exam ---------- */}
       {active.length > 0 && (
         <div
           className={`p-6 rounded-2xl border ${
-            isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+            isDarkMode
+              ? "bg-slate-900 border-slate-800"
+              : "bg-white border-slate-200"
           }`}
         >
           <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -36,19 +58,48 @@ export default function StudentExams() {
 
           {active.map((exam) => (
             <div
-              key={exam.id}
+              key={exam.examId}
               className={`flex justify-between items-center p-4 rounded-xl ${
                 isDarkMode ? "bg-slate-800" : "bg-slate-50"
               }`}
             >
               <div>
                 <p className="font-semibold">{exam.title}</p>
-                <p className="text-sm text-slate-500">{exam.endsIn}</p>
+                <p className="text-sm text-slate-500">
+                  Ends at {new Date(exam.endAt).toLocaleTimeString()}
+                </p>
               </div>
 
-              <button className="px-5 py-2 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700">
-                Continue Exam
-              </button>
+              {exam.attemptStatus === "submitted" ? (
+                // 🟡 COMPLETED
+                <span className="px-5 py-2 rounded-xl font-bold bg-slate-300 text-slate-600 cursor-not-allowed">
+                  Completed
+                </span>
+              ) : exam.attemptStatus === "in_progress" ? (
+                // 🟢 IN PROGRESS
+                <button
+                  onClick={() =>
+                    navigate(`/exam/${exam.examId}/instructions`, {
+                      state: { examMeta: exam },
+                    })
+                  }
+                  className="px-5 py-2 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700"
+                >
+                  Continue Exam
+                </button>
+              ) : (
+                // 🔵 NOT STARTED (no attempt)
+                <button
+                  onClick={() =>
+                    navigate(`/exam/${exam.examId}/instructions`, {
+                      state: { examMeta: exam },
+                    })
+                  }
+                  className="px-5 py-2 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Take Test
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -57,7 +108,9 @@ export default function StudentExams() {
       {/* ---------- Upcoming Exams ---------- */}
       <div
         className={`p-6 rounded-2xl border ${
-          isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+          isDarkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
         }`}
       >
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -65,31 +118,41 @@ export default function StudentExams() {
           Upcoming Exams
         </h3>
 
-        {upcoming.map((exam) => (
-          <div
-            key={exam.id}
-            className={`p-4 rounded-xl mb-3 flex justify-between items-center ${
-              isDarkMode ? "bg-slate-800" : "bg-slate-50"
-            }`}
-          >
-            <div>
-              <p className="font-semibold">{exam.title}</p>
-              <p className="text-sm text-slate-500">
-                {exam.date} • {exam.time} • {exam.duration}
-              </p>
-            </div>
+        {upcoming.length === 0 ? (
+          <EmptyState
+            message="No upcoming exams scheduled"
+            isDark={isDarkMode}
+          />
+        ) : (
+          upcoming.map((exam) => (
+            <div
+              key={exam.examId}
+              className={`p-4 rounded-xl mb-3 flex justify-between items-center ${
+                isDarkMode ? "bg-slate-800" : "bg-slate-50"
+              }`}
+            >
+              <div>
+                <p className="font-semibold">{exam.title}</p>
+                <p className="text-sm text-slate-500">
+                  {new Date(exam.startAt).toLocaleString()} •{" "}
+                  {exam.durationMinutes} mins
+                </p>
+              </div>
 
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
-              Scheduled
-            </span>
-          </div>
-        ))}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">
+                Scheduled
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
       {/* ---------- Completed Exams ---------- */}
       <div
         className={`p-6 rounded-2xl border ${
-          isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+          isDarkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
         }`}
       >
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -97,24 +160,39 @@ export default function StudentExams() {
           Completed Exams
         </h3>
 
-        {completed.map((exam) => (
-          <div
-            key={exam.id}
-            className={`p-4 rounded-xl mb-3 flex justify-between items-center ${
-              isDarkMode ? "bg-slate-800" : "bg-slate-50"
-            }`}
-          >
-            <div>
-              <p className="font-semibold">{exam.title}</p>
-              <p className="text-sm text-slate-500">Score: {exam.score}</p>
-            </div>
+        {completed.length === 0 ? (
+          <EmptyState message="No completed exams yet" isDark={isDarkMode} />
+        ) : (
+          completed.map((exam) => (
+            <div
+              key={exam.examId}
+              className={`p-4 rounded-xl mb-3 flex justify-between items-center ${
+                isDarkMode ? "bg-slate-800" : "bg-slate-50"
+              }`}
+            >
+              <div>
+                <p className="font-semibold">{exam.title}</p>
+                <p className="text-sm text-slate-500">Score: {exam.score?? 0}</p>
+              </div>
 
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
-              {exam.status}
-            </span>
-          </div>
-        ))}
+              <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">
+                Exam Expired
+              </span>
+            </div>
+          ))
+        )}
       </div>
+    </div>
+  );
+}
+function EmptyState({ message, isDark }) {
+  return (
+    <div
+      className={`p-6 rounded-xl text-center text-sm font-medium ${
+        isDark ? "bg-slate-800 text-slate-400" : "bg-slate-50 text-slate-500"
+      }`}
+    >
+      {message}
     </div>
   );
 }

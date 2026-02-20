@@ -1,92 +1,210 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
-// helper to create JWT
-const generateToken = (user) => {
+const Student = require("../models/Student.model");
+const Teacher = require("../models/Teacher.model");
+const Admin = require("../models/Admin.model");
+
+
+const generateToken = (user, role) => {
   return jwt.sign(
-    { id: user._id, role: user.role },
+    { id: user._id, role },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
 
+
 // POST /api/auth/signup
-exports.signup = async (req, res) => {
+ const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    console.log(req.body);
+    const { role } = req.body;
 
-    if (!name || !email || !password || !role) {
-      console.log("YESH")
-      return res.status(400).json({ message: "All fields are required" });
+    if (!role || !["student", "teacher"].includes(role)) {
+      return res.status(400).json({ message: "Invalid role" });
     }
 
-    const existing = await User.findOne({ email });
-    if (existing) {
-      return res.status(400).json({ message: "User already exists" });
+    // ---------------- STUDENT SIGNUP ----------------
+    if (role === "student") {
+      const {
+        name,
+        email,
+        password,
+        rollNumber,
+        admissionBatch,
+        currentBatch,
+        collegeId,
+        department,
+        section
+      } = req.body;
+
+      if (
+        !name ||
+        !email ||
+        !password ||
+        !rollNumber ||
+        !admissionBatch ||
+        !currentBatch ||
+        !collegeId ||
+        !department ||
+        !section
+      ) {
+        return res.status(400).json({ message: "All student fields are required" });
+      }
+
+      const exists = await Student.findOne({
+        $or: [{ email }, { rollNumber }]
+      });
+
+      if (exists) {
+        return res.status(400).json({ message: "Student already exists" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const student = await Student.create({
+        name,
+        email,
+        password: hashedPassword,
+        rollNumber,
+        admissionBatch,
+        currentBatch,
+        collegeId,
+        department,
+        section
+      });
+
+      const token = generateToken(student, "student");
+
+      return res.status(201).json({
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        role: "student",
+        token
+      });
     }
 
-    const user = await User.create({
-      name,
-      email,
-      password,
-      role, // "student" or "teacher"
-    });
+    // ---------------- TEACHER SIGNUP ----------------
+    if (role === "teacher") {
+      const { name, email, password, collegeId, department } = req.body;
 
-    const token = generateToken(user);
+      if (!name || !email || !password || !collegeId || !department) {
+        return res.status(400).json({ message: "All teacher fields are required" });
+      }
 
-    return res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token,
-    });
+      const exists = await Teacher.findOne({ email });
+      if (exists) {
+        return res.status(400).json({ message: "Teacher already exists" });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const teacher = await Teacher.create({
+        name,
+        email,
+        password: hashedPassword,
+        collegeId,
+        department
+      });
+
+      const token = generateToken(teacher, "teacher");
+
+      return res.status(201).json({
+        id: teacher._id,
+        name: teacher.name,
+        email: teacher.email,
+        role: "teacher",
+        token
+      });
+    }
   } catch (err) {
     console.error("Signup error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-// POST /api/auth/signin
-exports.signin = async (req, res) => {
+
+// POST /api/auth/login
+ const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password)
-      return res
-        .status(400)
-        .json({ message: "Please provide email and password" });
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
 
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(401).json({ message: "Invalid email or password" });
+    let user = null;
+    let role = null;
 
-    const isMatch = await user.matchPassword(password);
-    if (!isMatch)
-      return res.status(401).json({ message: "Invalid email or password" });
+    // 1️⃣ Check Admin
+    user = await Admin.findOne({ email });
+    if (user) role = "admin";
 
-    const token = generateToken(user);
+    // 2️⃣ Check Student
+    if (!user) {
+      user = await Student.findOne({ email });
+      if (user) role = "student";
+    }
+
+    // 3️⃣ Check Teacher
+    if (!user) {
+      user = await Teacher.findOne({ email });
+      if (user) role = "teacher";
+    }
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Account disabled" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role,
+        collegeId: user.collegeId
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     return res.json({
-      _id: user._id,
+      id: user._id,
       name: user.name,
       email: user.email,
-      role: user.role,
-      token,
+      role,
+      token
     });
   } catch (err) {
-    console.error("Signin error:", err);
+    console.error("Login error:", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
 
-// GET /api/auth/profile (me)
-exports.getMe = async (req, res) => {
+
+// GET /api/auth/me
+ const getMe = async (req, res) => {
   try {
-    // req.user is set by auth middleware
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const { id, role } = req.user;
+
+    let user;
+    if (role === "student") {
+      user = await Student.findById(id).select("-password");
+    } else if (role === "teacher") {
+      user = await Teacher.findById(id).select("-password");
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     return res.json(user);
   } catch (err) {
@@ -94,27 +212,7 @@ exports.getMe = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-// PUT /api/auth/profile (update basic info)
-exports.updateMe = async (req, res) => {
-  try {
-    const { name, role } = req.body;
-
-    const updates = {};
-    if (name) updates.name = name;
-    if (role) updates.role = role; // optional, be careful in real apps
-
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: updates },
-      { new: true }
-    ).select("-password");
-
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    return res.json(user);
-  } catch (err) {
-    console.error("UpdateMe error:", err);
-    return res.status(500).json({ message: "Server error" });
-  }
+module.exports = {
+  signin,
+  signup,getMe,
 };

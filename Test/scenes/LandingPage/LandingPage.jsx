@@ -1,22 +1,20 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-// import nor from "../public/nor.png";
-import img1 from "../../public/ana1.svg";
-import img2 from "../../public/ana2.svg";
-import img3 from "../../public/ana3.svg";
-// import img4 from "../../public/ana4.svg";
-import img5 from "../../public/ana5.svg";
-import img6 from "../../public/ana6.svg";
-import img7 from "../../public/ana7.svg";
-import img8 from "../../public/ana8.svg";
-// import img9 from "../../public/ana9.svg";
-import img10 from "../../public/ana10.svg";
+
+
+import img1 from "../../public/ana2.svg";
+import img2 from "../../public/ana3.svg";
+import img3 from "../../public/ana5.svg";
+import img4 from "../../public/ana10.svg";
+import img5 from "../../public/ana12.svg";
+import img6 from "../../public/ana14.svg";
+import img7 from "../../public/ana15.svg";
 
 export default function CapsuleMediaLanding() {
   const [randomImage, setRandomImage] = useState(null);
   
-  const images = [img1, img2, img3, img5, img6, img7, img8, img10];
+  const images = [img2, img3, img5, img6, img7, img4, img1];
   
   useEffect(() => {
     const idx = Math.floor(Math.random() * images.length);

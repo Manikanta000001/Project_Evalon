@@ -14,6 +14,7 @@ import {
   Moon,
   GraduationCap,
   Clock,
+  LogOut ,
 } from "lucide-react";
 
 import SidebarItem from "../components/SidebarItem";
@@ -21,6 +22,8 @@ import SidebarItem from "../components/SidebarItem";
 export default function DashboardLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [user, setuser] = useState(false);
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +36,11 @@ export default function DashboardLayout() {
     if (isDarkMode) document.body.classList.add("bg-slate-950");
     else document.body.classList.remove("bg-slate-950");
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userdata"));
+    setuser(user);
+  }, []);
 
   return (
     <div
@@ -104,7 +112,7 @@ export default function DashboardLayout() {
 
           <SidebarItem
             icon={Users}
-            label="Classroom"
+            label="Examinatin Hub"
             active={path === "/teacher/students"}
             collapsed={isCollapsed}
             isDarkMode={isDarkMode}
@@ -118,6 +126,17 @@ export default function DashboardLayout() {
             collapsed={isCollapsed}
             isDarkMode={isDarkMode}
             onClick={() => navigate("/teacher/analytics")}
+          />
+          <SidebarItem
+            icon={LogOut }
+            label="Logout"
+            active={path === "/teacher/logut"}
+            collapsed={isCollapsed}
+            isDarkMode={isDarkMode}
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
           />
         </nav>
       </aside>
@@ -148,7 +167,7 @@ export default function DashboardLayout() {
               >
                 <Clock size={16} className="text-brandBlue-500" />
                 <span className="text-xs font-bold uppercase tracking-tight">
-                  Jan 2024
+                  Jan 2026
                 </span>
               </div>
 
@@ -172,7 +191,7 @@ export default function DashboardLayout() {
                 }`}
               >
                 <div className="hidden sm:block text-right">
-                  <p className="text-sm font-bold">Mani</p>
+                  <p className="text-sm font-bold">{user.name || "User"}</p>
                   <p className="text-[10px] text-slate-500 uppercase tracking-tight">
                     Physics Dept
                   </p>

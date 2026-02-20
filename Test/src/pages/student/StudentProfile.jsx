@@ -1,18 +1,31 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
 import { User, Mail, GraduationCap, Lock } from "lucide-react";
 import necn from '../../../public/necn.avif'
 
+ 
 
 export default function StudentProfile() {
   const { dark: isDarkMode } = useOutletContext() || {};
 
   // mock student data
   const [profile, setProfile] = useState({
-    name: "John Doe",
-    email: "john@student.com",
+    name: "",
+    email: "",
     department: "Computer Science",
   });
+
+  
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("userdata"));
+    if (user) {
+      setProfile({
+        name: user.name || "",
+        email: user.email || "",
+        department: "Computer Science",
+      });
+    }
+  }, []);
 
   const [passwords, setPasswords] = useState({
     old: "",

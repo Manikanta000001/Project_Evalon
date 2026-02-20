@@ -16,6 +16,7 @@ import {
   Moon,
   GraduationCap,
   Clock,
+  LogOut,
 } from "lucide-react";
 
 import SidebarItem from "../components/SidebarItem";
@@ -114,6 +115,17 @@ export default function StudentLayout() {
             isDarkMode={isDarkMode}
             onClick={() => navigate("/student/profile")}
           />
+                <SidebarItem
+            icon={LogOut }
+            label="Logout"
+            active={location.path === "/student/logut"}
+            collapsed={isCollapsed}
+            isDarkMode={isDarkMode}
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
+          />
         </nav>
       </aside>
 
@@ -145,7 +157,7 @@ export default function StudentLayout() {
                 }`}
               >
                 <Clock size={16} className="text-emerald-500" />
-                <span className="text-xs font-bold uppercase">Jan 2024</span>
+                <span className="text-xs font-bold uppercase">Jan 2026</span>
               </div>
 
               <button

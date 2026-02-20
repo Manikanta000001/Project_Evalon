@@ -41,8 +41,8 @@ export default function TeacherDashboard() {
 
       {/* ---------- Top Statistic Cards ---------- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Total Students" value="1,248" trend="+12%" trendUp isDarkMode={isDarkMode} />
-        <StatCard icon={CheckCircle} label="Exams Completed" value="854" trend="+5%" trendUp isDarkMode={isDarkMode} />
+        <StatCard icon={Users} label="Total Students" value="748" trend="+12%" trendUp isDarkMode={isDarkMode} />
+        <StatCard icon={CheckCircle} label="Exams Completed" value="54" trend="+5%" trendUp isDarkMode={isDarkMode} />
         <StatCard icon={Clock} label="Avg. Time spent" value="45m" trend="-2m" trendUp={false} isDarkMode={isDarkMode} />
         <StatCard icon={GraduationCap} label="Success Rate" value="92%" trend="+3%" trendUp isDarkMode={isDarkMode} />
       </div>
@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
 
         {/* Grade Distribution Pie */}
         <div>
-          <Card title="Grade Distribution" subtitle="Last Semester Results" isDarkMode={isDarkMode}>
+          <Card title="Grade Distribution" subtitle="Last Exam Results" isDarkMode={isDarkMode}>
             <div className="h-80 flex flex-col items-center justify-center">
               <ResponsiveContainer width="100%" height="80%">
                 <PieChart>
@@ -125,7 +125,7 @@ export default function TeacherDashboard() {
           <div className="space-y-4">
             {[
               { name: "Final Calculus Quiz", status: "Active", students: 120, time: "2h left" },
-              { name: "World War II History", status: "Closed", students: 95, time: "Yesterday" },
+              { name: "Technical Quiz", status: "Closed", students: 95, time: "Yesterday" },
               { name: "Organic Chemistry", status: "Draft", students: 0, time: "Last edited 1h ago" }
             ].map((exam, i) => (
               <div key={i} className="flex justify-between p-3 rounded-lg">

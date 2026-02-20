@@ -23,6 +23,9 @@ import Landing from "./scenes/LandingPage/LandingPage";
 import AuthPage from "./scenes/AuthPage/AuthPage";
 
 import Dashboard from "./src/Dashboard";
+import Generation from "./src/pages/teacher/Generation";
+import InstructionsView from "./src/views/InstructionsView";
+import ExamPortalView from "./src/views/ExamPortalView";
 
 function App() {
   return (
@@ -32,11 +35,16 @@ function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/auth" element={<AuthPage />} />
+      <Route path="/exam/:examId/instructions" element={<ExamPortalView />} />
+      {/* <Route path="/exam/:examId/start" element={<ExamPortalView />} /> */}
+
 
       <Route path="/teacher" element={<DashboardLayout />}>
         <Route index element={<TeacherDashboard />} />
         <Route path="create" element={<AssessmentStudio />} />
-        <Route path="questions" element={<QuestionBank />} />
+        {/* <Route path="questions" element={<QuestionBank />} /> */}
+        {/* <Route path="questions/new" element={<Generation/>} /> */}
+        <Route path="questions" element={<Generation/>} />
         <Route path="students" element={<StudentsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
       </Route>
@@ -46,6 +54,7 @@ function App() {
         <Route path="exams" element={<StudentExams />} />
         <Route path="results" element={<StudentResults />} />
         <Route path="profile" element={<StudentProfile />} />
+        
       </Route>
     </Routes>
   );

@@ -3,18 +3,18 @@ const {
   signup,
   signin,
   getMe,
-  updateMe,
+  
 } = require("../controllers/authController");
-const { protect } = require("../middleware/authMiddleware");
+const { protect , isAdmin} = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 // public
-router.post("/signup", signup);
 router.post("/signin", signin);
 
 // protected
+router.post("/signup", protect, isAdmin, signup);
 router.get("/profile", protect, getMe);
-router.put("/profile", protect, updateMe);
+// router.put("/profile", protect, updateMe);
 
 module.exports = router;

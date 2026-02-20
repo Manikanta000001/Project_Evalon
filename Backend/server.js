@@ -3,6 +3,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const ExamRoute = require("./routes/Exam.route");
+const Attemptroute = require("./routes/StudentExam.attempt.route");
+const Resultroute = require("./routes/Results.route");
+const Teachertroute = require("./routes/TeacherExam.route");
 
 dotenv.config();
 connectDB();
@@ -20,6 +24,10 @@ app.get("/", (req, res) => {
 
 // auth routes
 app.use("/api/auth", authRoutes);
+app.use("/api/attempt", Attemptroute);
+app.use("/api/results", Resultroute);
+app.use("/api/teacher", Teachertroute);
+app.use("/api", ExamRoute);
 
 const PORT = process.env.PORT || 5000;
 

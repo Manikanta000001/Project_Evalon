@@ -1,7 +1,9 @@
 
 const Dashboard = () => {
   // Get the saved user name (you will store it at login/signup)
-  const userName = localStorage.getItem("userName") || "User";
+  const user = JSON.parse(localStorage.getItem("userdata"));
+  const userName = user.name || "User";
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

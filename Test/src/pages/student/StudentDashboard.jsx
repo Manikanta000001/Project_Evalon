@@ -1,5 +1,6 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
+import { useEffect } from "react";
 import {
   BookOpen,
   Clock,
@@ -8,8 +9,11 @@ import {
   FileText,
 } from "lucide-react";
 
+
 export default function StudentDashboard() {
   const { dark: isDarkMode } = useOutletContext() || {};
+
+
 
   const stats = [
     {

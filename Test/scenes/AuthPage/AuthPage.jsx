@@ -35,6 +35,7 @@ const AuthPage = () => {
       const body = isSignup
         ? { name, email, password,role}
         : { email, password };
+        console.log("tying to send data");
 
       const res = await fetch(url, {
         method: "POST",
@@ -43,6 +44,7 @@ const AuthPage = () => {
       });
 
       const data = await res.json();
+      console.log(data)
 
       if (!res.ok) {
         throw new Error(data.message || "Something went wrong");
@@ -54,8 +56,8 @@ const AuthPage = () => {
       }
 
       // redirect to dashboard
-      localStorage.setItem("userName", response.data.name);
-      navigate("/dashboard");
+      localStorage.setItem("userdata", JSON.stringify(data));
+      data.role=="teacher"?navigate("/teacher"):navigate("/student");
     } catch (err) {
       setError(err.message);
     }
@@ -147,14 +149,16 @@ const AuthPage = () => {
               />
             </div>
           )}
-          <Link to="/teacher"> 
+         
+         {/* <Link to="/teacher"> */}
           <button
             type="submit"
             className="w-full py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 transition"
           >
             {isSignup ? "Sign Up" : "Login"}
           </button>
-          </Link>
+          {/* </Link> */}
+        
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
@@ -169,7 +173,7 @@ const AuthPage = () => {
       </div>
 
       {/* Right Image Section */}
-      <div className="hidden md:flex w-2/3 h-[100vh] items-center justify-center rounded-l-[4rem] shadow-lg overflow-hidden">
+      <div className="hidden md:flex w-2/3 h-[100vh] items-center justify-center rounded-l-[1.5rem] shadow-lg overflow-hidden">
         <img
           src={Blue_p}
           alt="Capsule Illustration"

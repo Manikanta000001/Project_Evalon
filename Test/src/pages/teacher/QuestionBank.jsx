@@ -1,11 +1,12 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { Plus, Trash2, Search } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
-
+import { Link,useNavigate } from "react-router-dom";
 export default function QuestionBank() {
   // 🌙 Dark mode from DashboardLayout
   const { dark: isDarkMode } = useOutletContext() || {};
-
+const navigate = useNavigate();
   // 🧠 Local state (same as original)
   const [questions, setQuestions] = useState([
     { id: 1, text: "Explain the process of photosynthesis.", type: "Short Answer", subject: "Biology" },
@@ -60,7 +61,7 @@ export default function QuestionBank() {
           />
         </div>
 
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-indigo-700">
+        <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-indigo-700" onClick={()=>{navigate("new")}}>
           <Plus size={16} />
           New Entry
         </button>
