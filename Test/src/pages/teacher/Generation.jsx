@@ -1,14 +1,10 @@
-
 import Preview from "../../components/Preview";
-
 
 import { toPng } from "html-to-image";
 import jsPDF from "jspdf";
 
 import { useOutletContext, useNavigate } from "react-router-dom";
 import axios from "axios";
-
-
 
 // testing logic
 import React, { useState, useRef, useEffect } from "react";
@@ -53,6 +49,7 @@ import {
   ExternalLink,
   HelpCircle,
 } from "lucide-react";
+import PreviewContainer from "../../components/PreviewContainer.jsx";
 
 /**
  * ACTION FEEDBACK TOAST
@@ -154,9 +151,6 @@ const NotificationModal = ({
 };
 
 export default function Generation() {
-
-
-
   // --- Global States ---
   const { dark: isDark } = useOutletContext() || {};
 
@@ -167,7 +161,8 @@ export default function Generation() {
   const [parseSuccess, setParseSuccess] = useState(false);
   const [parseError, setParseError] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100);
-  
+  const [savedPapers, setSavedPapers] = useState([]);
+
   const [actionFeedback, setActionFeedback] = useState({
     show: false,
     type: "",
@@ -211,6 +206,13 @@ export default function Generation() {
     "Mid 2",
     "Semester End",
   ];
+
+  const COURSES_BY_REGULATION = {
+    R21: ["Operating Systems", "Mobile Application Development"],
+    R22: ["Artificial Intelligence", "Cloud Computing"],
+    R23: ["Data Science", "Cyber Security"],
+    R29: ["Quantum Computing", "Blockchain Technology"],
+  };
   const degrees = ["B.Tech", "M.Tech", "MBA", "MCA"];
   const years = ["I", "II", "III", "IV"];
   const semesters = ["I", "II"];
@@ -229,39 +231,43 @@ export default function Generation() {
     }));
   };
 
-const downloadPDF = async () => {
-  const node = document.getElementById("printable-paper");
+  const downloadPDF = async () => {
+    const node = document.getElementById("printable-paper");
 
-  const dataUrl = await toPng(node, {
-    backgroundColor: "#fff",
-    pixelRatio: 2,
-  });
+    const dataUrl = await toPng(node, {
+      backgroundColor: "#fff",
+      pixelRatio: 2,
+    });
 
-  const pdf = new jsPDF("p", "mm", "a4");
+    const pdf = new jsPDF("p", "mm", "a4");
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-  const img = new Image();
-  img.src = dataUrl;
+    const img = new Image();
+    img.src = dataUrl;
 
-  img.onload = () => {
-    const imgHeight = (img.height * pageWidth) / img.width;
-    let heightLeft = imgHeight;
-    let position = 0;
+    img.onload = () => {
+      const imgHeight = (img.height * pageWidth) / img.width;
+      let heightLeft = imgHeight;
+      let position = 0;
 
-    pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      pdf.addPage();
       pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
       heightLeft -= pageHeight;
-    }
 
-    pdf.save("Exam_Paper.pdf");
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save("Exam_Paper.pdf");
+    };
   };
+  const handlePrint = () => {
+    console.log("clicked")
+  window.print();
 };
 
   const isFormFilled = () => {
@@ -312,7 +318,7 @@ const downloadPDF = async () => {
       setParseSuccess(true);
       showActionFeedback("success", "Document parsed successfully");
     } catch (err) {
-      console.error(err)
+      console.error(err);
       setParseError(true);
       showActionFeedback("error", "Document analysis failed");
     } finally {
@@ -328,23 +334,37 @@ const downloadPDF = async () => {
     );
   };
 
-  const triggerSave = () => {
-    setModal({
-      open: true,
-      type: "info",
-      title: "Cloud Repository",
-      message:
-        "Enter a filename to sync this draft across all exam cell terminals.",
-      showInput: true,
-      action: () => {
+const triggerSave = () => {
+  if (!backendResult) {
+    showActionFeedback("error", "Generate paper before saving");
+    return;
+  }
+
+  setModal({
+    open: true,
+    type: "info",
+    title: "Save Paper",
+    message: "Confirm saving this paper to repository?",
+    showInput: false,
+    action: async () => {
+      try {
+        const payload = {
+          meta: formData,
+          questions: backendResult,
+        };
+
+        await axios.post("http://127.0.0.1:5000/api/papers", payload);
+
         setModal({ open: false });
-        showActionFeedback(
-          "success",
-          `Paper synced to cloud as "${repoName || "Untitled"}"`,
-        );
-      },
-    });
-  };
+        showActionFeedback("success", "Paper saved successfully");
+
+      } catch (err) {
+        console.error(err);
+        showActionFeedback("error", "Failed to save paper");
+      }
+    },
+  });
+};
 
   const triggerDownload = () => {
     setModal({
@@ -561,17 +581,31 @@ const downloadPDF = async () => {
                     />
                   </div>
                 </div>
+
                 <div>
                   <label className={labelClasses}>Full Course Title</label>
-                  <input
-                    type="text"
-                    placeholder="Quantum Computing Basics"
+                  <select
                     value={formData.courseName}
                     onChange={(e) =>
                       handleInputChange("courseName", e.target.value)
                     }
+                    disabled={!formData.regulation}
                     className={inputClasses}
-                  />
+                  >
+                    <option value="">
+                      {formData.regulation
+                        ? "Select Course"
+                        : "Select Regulation First"}
+                    </option>
+
+                    {COURSES_BY_REGULATION[formData.regulation]?.map(
+                      (course) => (
+                        <option key={course} value={course}>
+                          {course}
+                        </option>
+                      ),
+                    )}
+                  </select>
                 </div>
               </div>
 
@@ -708,7 +742,7 @@ const downloadPDF = async () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      startParsing(false);
+                      startParsing();
                     }}
                     className="w-full py-4 bg-slate-900 dark:bg-slate-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-xl"
                   >
@@ -731,6 +765,9 @@ const downloadPDF = async () => {
                   <button
                     onClick={() => {
                       if (!backendResult) return;
+                      if (backendResult) {
+                        startParsing();
+                      }
                       setShowPreview(true);
                     }}
                     disabled={!isFormFilled()}
@@ -763,7 +800,7 @@ const downloadPDF = async () => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      startParsing(false);
+                      startParsing();
                     }}
                     className="w-full py-4 bg-blue-600 text-white rounded-xl font-black shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2"
                   >
@@ -828,72 +865,24 @@ const downloadPDF = async () => {
           </div>
         </main>
       ) : (
-        <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in zoom-in-95 duration-500 pb-20">
-          <header
-            className={` top-4 z-50 flex flex-col md:flex-row justify-between items-center p-4  border backdrop-blur-md gap-4 ${isDark ? "bg-slate-900/80 border-slate-800 shadow-2xl" : "bg-white/80 border-slate-200 shadow-xl shadow-slate-200/50"}`}
-          >
-            <button
-              onClick={() => setShowPreview(false)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-[11px] font-black uppercase transition-all ${isDark ? "bg-slate-800 text-slate-400 hover:text-white" : "bg-slate-50 text-slate-500 hover:bg-slate-100"}`}
-            >
-              <ArrowLeft size={16} /> Exit Editor
-            </button>
 
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex items-center p-1 rounded-xl border ${isDark ? "bg-slate-800 border-slate-700" : "bg-slate-100 border-slate-200"}`}
-              >
-                <button
-                  onClick={() => setZoomLevel((z) => Math.max(z - 10, 50))}
-                  className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
-                >
-                  <ZoomOut size={16} />
-                </button>
-                <span className="px-4 text-[11px] font-black min-w-[60px] text-center text-blue-500">
-                  {zoomLevel}%
-                </span>
-                <button
-                  onClick={() => setZoomLevel((z) => Math.min(z + 10, 200))}
-                  className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all"
-                >
-                  <ZoomIn size={16} />
-                </button>
-              </div>
-              <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 hidden md:block mx-1" />
-  
-              <button
-                onClick={triggerSave}
-                className={`p-3 rounded-xl transition-all border ${isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600 shadow-sm"}`}
-              >
-                <Save size={20} />
-              </button>
-              <button
-                onClick={triggerDownload}
-                className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 font-black text-[11px] uppercase hover:bg-blue-700 transition-all active:scale-95"
-              >
-                <Download size={18} /> Export PDF
-              </button>
-            </div>
-          </header>
-
-          <div    style={{
-          transform: `scale(${zoomLevel / 100})`,
-          transformOrigin: "top center",
-        }}
-            className={` p-8 md:p-16 overflow-auto min-h-[310mm] flex justify-center border-2 border-white dark:border-slate-800 shadow-inner ${isDark ? "bg-slate-900/50" : "bg-slate-200/50"}`}
-          >
-
-{backendResult && (
-  <Preview
-    backendData={backendResult}
-    meta={formData}
-     zoomLevel={zoomLevel}
-  />
-)}
-
- 
-          </div>
-        </div>
+        <PreviewContainer
+          isDark={isDark}
+          zoomLevel={zoomLevel}
+          setZoomLevel={setZoomLevel}
+          triggerSave={triggerSave}
+          triggerDownload={triggerDownload}
+          handlePrint={handlePrint}
+          onExit={() => setShowPreview(false)}
+        >
+          {backendResult && (
+            <Preview
+              backendData={backendResult}
+              meta={formData}
+              zoomLevel={zoomLevel}
+            />
+          )}
+        </PreviewContainer>
       )}
 
       <style>{`
@@ -907,12 +896,12 @@ const downloadPDF = async () => {
     visibility: hidden;
   }
 
-  .print-area,
-  .print-area * {
+  #printable-paper,
+  #printable-paper * {
     visibility: visible;
   }
 
-  .print-area {
+  #printable-paper {
     position: absolute;
     left: 0;
     top: 0;

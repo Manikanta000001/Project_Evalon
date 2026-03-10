@@ -28,33 +28,61 @@
 // =======================
 // TEACHERS
 // =======================
- const teachers = [
+const teachers = [
+  // 🔹 CSE HOD
   {
     name: "Dr. Ramesh Kumar",
     email: "ramesh.cse@abc.edu",
     password: "teacher123",
-    department: "CSE"
+    department: "CSE",
+    roles: [ "hod"]
   },
+
+  // 🔹 Normal CSE Teacher
   {
     name: "Ms. Anitha Rao",
     email: "anitha.cse@abc.edu",
     password: "teacher123",
-    department: "CSE"
+    department: "CSE",
+    roles: ["teacher"]
   },
+
+  // 🔹 ECE Teacher
   {
     name: "Mr. Suresh Patel",
     email: "suresh.ece@abc.edu",
     password: "teacher123",
-    department: "ECE"
+    department: "ECE",
+    roles: ["teacher"]
   },
+
+  // 🔹 IT Teacher
   {
     name: "Dr. Meena Iyer",
     email: "meena.it@abc.edu",
     password: "teacher123",
-    department: "IT"
+    department: "IT",
+    roles: ["teacher"]
+  },
+
+  // 🔹 Exam Cell Staff
+  {
+    name: "Exam Cell Officer",
+    email: "examcell@abc.edu",
+    password: "exam123",
+    department: "CSE", // can be any
+    roles: ["examcell"]
+  },
+
+  // 🔹 Principal
+  {
+    name: "Dr. Principal",
+    email: "principal@abc.edu",
+    password: "principal123",
+    department: "ADMIN",
+    roles: ["principal"]
   }
 ];
-
 
  const students = [
   // ---------- CSE | Batch 22 (some detained) ----------

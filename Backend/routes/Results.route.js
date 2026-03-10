@@ -2,17 +2,21 @@ const express = require("express");
 const router = express.Router();
 
 const {
-getMyResults
+  getMyResults
 } = require("../controllers/exam.controller");
 
 const {
   protect,
-  isStudent
+  authorizeRoles
 } = require("../middleware/authMiddleware");
 
 
-
-router.get("/my", protect, isStudent, getMyResults);
-
+// Only students can view their results
+router.get(
+  "/my",
+  protect,
+  authorizeRoles("student"),
+  getMyResults
+);
 
 module.exports = router;

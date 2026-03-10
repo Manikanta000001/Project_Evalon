@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import necn from '../../public/necn.avif'
+import necn from "../../public/necn.avif";
 
 import {
   LayoutDashboard,
@@ -14,7 +14,12 @@ import {
   Moon,
   GraduationCap,
   Clock,
-  LogOut ,
+  LogOut,
+  ArrowUpToLine,
+  ShieldCheck,
+  FileCheck,
+  SaveAll,
+  Activity,
 } from "lucide-react";
 
 import SidebarItem from "../components/SidebarItem";
@@ -22,8 +27,7 @@ import SidebarItem from "../components/SidebarItem";
 export default function DashboardLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [user, setuser] = useState(false);
-
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,14 +42,18 @@ export default function DashboardLayout() {
   }, [isDarkMode]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userdata"));
-    setuser(user);
+    const storedUser = JSON.parse(localStorage.getItem("userdata"));
+    setUser(storedUser);
   }, []);
+  console.log("the user", user);
+  if (!user) return null;
 
   return (
     <div
       className={`min-h-screen flex transition-colors duration-300 ${
-        isDarkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"
+        isDarkMode
+          ? "bg-slate-950 text-slate-100"
+          : "bg-slate-50 text-slate-900"
       }`}
     >
       {/* ---------- Sidebar ---------- */}
@@ -92,32 +100,105 @@ export default function DashboardLayout() {
             onClick={() => navigate("/teacher")}
           />
 
-          <SidebarItem
-            icon={Plus}
-            label="Assessment Studio"
-            active={path === "/teacher/create"}
-            collapsed={isCollapsed}
-            isDarkMode={isDarkMode}
-            onClick={() => navigate("/teacher/create")}
-          />
+          {user?.roles?.includes("teacher") && (
+            <>
+              <SidebarItem
+                icon={Plus}
+                label="Assessment Studio"
+                active={path === "/teacher/create"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/create")}
+              />
 
-          <SidebarItem
-            icon={BookOpen}
-            label="Question Bank"
-            active={path === "/teacher/questions"}
-            collapsed={isCollapsed}
-            isDarkMode={isDarkMode}
-            onClick={() => navigate("/teacher/questions")}
-          />
+              <SidebarItem
+                icon={Users}
+                label="Examinatin Hub"
+                active={path === "/teacher/students"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/students")}
+              />
 
-          <SidebarItem
-            icon={Users}
-            label="Examinatin Hub"
-            active={path === "/teacher/students"}
-            collapsed={isCollapsed}
-            isDarkMode={isDarkMode}
-            onClick={() => navigate("/teacher/students")}
-          />
+              <SidebarItem
+                icon={ArrowUpToLine}
+                label="Upload Section"
+                active={path === "/teacher/upload"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/upload")}
+              />
+              <SidebarItem
+                icon={Activity}
+                label="Upload Section"
+                active={path === "/teacher/bankstatus"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/bankstatus")}
+              />
+            </>
+          )}
+
+          {/* if hod , the sidebar contents */}
+
+          {user?.roles?.includes("hod") && (
+            <>
+              <SidebarItem
+                icon={FileCheck}
+                label="Approvals"
+                active={path === "/teacher/approvals"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/approvals")}
+              />
+            </>
+          )}
+
+          {/* if principal , the sidebar contents */}
+
+          {user?.roles?.includes("principal") && (
+            <>
+              <SidebarItem
+                icon={ShieldCheck}
+                label="Approved Banks"
+                active={path === "/teacher/generate-paper"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/generate-paper")}
+              />
+            </>
+          )}
+
+          {/* if examcell , the sidebar contents */}
+
+          {user?.roles?.includes("examcell") && (
+            <>
+              <SidebarItem
+                icon={ShieldCheck}
+                label="Approved Banks"
+                active={path === "/teacher/generate-paper"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/generate-paper")}
+              />
+              <SidebarItem
+                icon={BookOpen}
+                label="Exam Design"
+                active={path === "/teacher/questions"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/questions")}
+              />
+              <SidebarItem
+                icon={SaveAll}
+                label="Saved Papers"
+                active={path === "/teacher/savedrepo"}
+                collapsed={isCollapsed}
+                isDarkMode={isDarkMode}
+                onClick={() => navigate("/teacher/savedrepo")}
+              />
+            </>
+          )}
 
           <SidebarItem
             icon={BarChart3}
@@ -127,8 +208,9 @@ export default function DashboardLayout() {
             isDarkMode={isDarkMode}
             onClick={() => navigate("/teacher/analytics")}
           />
+
           <SidebarItem
-            icon={LogOut }
+            icon={LogOut}
             label="Logout"
             active={path === "/teacher/logut"}
             collapsed={isCollapsed}
@@ -148,7 +230,6 @@ export default function DashboardLayout() {
         }`}
       >
         <div className="p-4 md:p-8 max-w-7xl mx-auto">
-
           {/* ---------- Page Header ---------- */}
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
@@ -162,12 +243,17 @@ export default function DashboardLayout() {
               {/* Date pill */}
               <div
                 className={`flex items-center space-x-2 px-4 py-2 rounded-full border ${
-                  isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+                  isDarkMode
+                    ? "bg-slate-900 border-slate-800"
+                    : "bg-white border-slate-200"
                 }`}
               >
                 <Clock size={16} className="text-brandBlue-500" />
                 <span className="text-xs font-bold uppercase tracking-tight">
-                  Jan 2026
+                  {new Date().toLocaleDateString("en-US", {
+                    month: "short",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
 
@@ -179,7 +265,9 @@ export default function DashboardLayout() {
                     ? "bg-slate-900 border-slate-800 text-yellow-400 hover:text-yellow-300"
                     : "bg-white border-slate-200 text-slate-500 hover:text-brandBlue-600"
                 }`}
-                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                title={
+                  isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+                }
               >
                 {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
@@ -193,7 +281,7 @@ export default function DashboardLayout() {
                 <div className="hidden sm:block text-right">
                   <p className="text-sm font-bold">{user.name || "User"}</p>
                   <p className="text-[10px] text-slate-500 uppercase tracking-tight">
-                    Physics Dept
+                     {user.department} Department
                   </p>
                 </div>
 

@@ -1,6 +1,7 @@
 import React from "react";
 import { useOutletContext } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   BookOpen,
   Clock,
@@ -9,60 +10,62 @@ import {
   FileText,
 } from "lucide-react";
 
-
 export default function StudentDashboard() {
   const { dark: isDarkMode } = useOutletContext() || {};
+  const [dashboard, setDashboard] = useState(null);
+useEffect(() => {
+  const fetchDashboard = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
+      const res = await axios.get("http://localhost:5000/api/dashboard/student", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      setDashboard(res.data);
+    } catch (err) {
+      console.error("Dashboard error", err);
+    }
+  };
+
+  fetchDashboard();
+}, []);
 
   const stats = [
     {
       label: "Upcoming Exams",
-      value: 3,
+      value: dashboard?.stats?.upcoming || 0,
       icon: BookOpen,
       color: "text-indigo-500",
     },
     {
       label: "Completed Exams",
-      value: 12,
+      value: dashboard?.stats?.completed || 0,
       icon: CheckCircle,
       color: "text-emerald-500",
     },
     {
       label: "Avg Score",
-      value: "82%",
+     value: `${dashboard?.stats?.avgScore ?? 0}%`,
       icon: BarChart3,
       color: "text-yellow-500",
     },
     {
       label: "Total Attempts",
-      value: 18,
+      value: dashboard?.stats?.attempts || 0,
       icon: FileText,
       color: "text-purple-500",
     },
   ];
-
-  const recentActivity = [
-    {
-      title: "Physics Unit Test",
-      status: "Completed",
-      score: "18 / 25",
-    },
-    {
-      title: "Biology MCQ Test",
-      status: "Completed",
-      score: "22 / 25",
-    },
-    {
-      title: "Math Algebra Quiz",
-      status: "Upcoming",
-      score: "-",
-    },
-  ];
+console.log(dashboard)
+if (!dashboard) {
+  return <div className="p-6 text-slate-500">Loading dashboard...</div>;
+}
 
   return (
     <div className="space-y-8">
-
       {/* ================= STATS ================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((item, idx) => (
@@ -93,7 +96,9 @@ export default function StudentDashboard() {
       {/* ================= UPCOMING EXAM ================= */}
       <div
         className={`p-6 rounded-2xl border ${
-          isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+          isDarkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
         }`}
       >
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
@@ -107,9 +112,13 @@ export default function StudentDashboard() {
           }`}
         >
           <div>
-            <p className="font-semibold">Chemistry Chapter Test</p>
+            <p className="font-semibold">
+              {dashboard?.nextExam?.title || "No upcoming exam"}
+            </p>
             <p className="text-sm text-slate-500">
-              Jan 26, 2026 • 10:00 AM • 45 mins
+              {dashboard?.nextExam
+                ? `${new Date(dashboard.nextExam.startAt).toLocaleString()} • ${dashboard.nextExam.duration} mins`
+                : ""}
             </p>
           </div>
 
@@ -122,13 +131,15 @@ export default function StudentDashboard() {
       {/* ================= RECENT ACTIVITY ================= */}
       <div
         className={`p-6 rounded-2xl border ${
-          isDarkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"
+          isDarkMode
+            ? "bg-slate-900 border-slate-800"
+            : "bg-white border-slate-200"
         }`}
       >
         <h3 className="font-bold text-lg mb-4">Recent Activity</h3>
 
         <div className="space-y-3">
-          {recentActivity.map((item, i) => (
+          {dashboard?.recentActivity?.map((item, i) => (
             <div
               key={i}
               className={`p-4 rounded-xl flex justify-between items-center ${
@@ -137,7 +148,7 @@ export default function StudentDashboard() {
             >
               <div>
                 <p className="font-semibold">{item.title}</p>
-                <p className="text-sm text-slate-500">{item.status}</p>
+                <p className="text-sm text-slate-500">{item.status} • {new Date(item.date).toLocaleDateString()}</p>
               </div>
 
               <span
@@ -145,7 +156,7 @@ export default function StudentDashboard() {
                   item.score === "-" ? "text-slate-400" : "text-emerald-500"
                 }`}
               >
-                {item.score}
+                {item.score ? `${item.score} / ${item.total}` : "-"}
               </span>
             </div>
           ))}

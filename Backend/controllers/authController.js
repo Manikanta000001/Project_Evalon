@@ -4,16 +4,22 @@ const bcrypt = require("bcryptjs");
 const Student = require("../models/Student.model");
 const Teacher = require("../models/Teacher.model");
 const Admin = require("../models/Admin.model");
+const Otp = require("../models/Otp.model");
+const sendOtpEmail = require("../utils/mailer");
 
 
 const generateToken = (user, role) => {
   return jwt.sign(
-    { id: user._id, role },
+    {
+      id: user._id,
+      role, // keep for backward compatibility
+      roles: user.roles || [role],
+      collegeId: user.collegeId
+    },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
-
 
 // POST /api/auth/signup
  const signup = async (req, res) => {
@@ -100,13 +106,14 @@ const generateToken = (user, role) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const teacher = await Teacher.create({
-        name,
-        email,
-        password: hashedPassword,
-        collegeId,
-        department
-      });
+const teacher = await Teacher.create({
+  name,
+  email,
+  password: hashedPassword,
+  collegeId,
+  department,
+  roles: ["teacher"]
+});
 
       const token = generateToken(teacher, "teacher");
 
@@ -166,21 +173,23 @@ const generateToken = (user, role) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign(
-      {
-        id: user._id,
-        role,
-        collegeId: user.collegeId
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-
+const token = jwt.sign(
+  {
+    id: user._id,
+    role, // admin / student / teacher
+    roles: role === "teacher" ? user.roles : [role],
+    collegeId: user.collegeId
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
     return res.json({
       id: user._id,
       name: user.name,
       email: user.email,
+      department:user.department,
       role,
+      roles: role === "teacher" ? user.roles : [role], 
       token
     });
   } catch (err) {
@@ -191,11 +200,12 @@ const generateToken = (user, role) => {
 
 
 // GET /api/auth/me
- const getMe = async (req, res) => {
+const getMe = async (req, res) => {
   try {
     const { id, role } = req.user;
 
     let user;
+
     if (role === "student") {
       user = await Student.findById(id).select("-password");
     } else if (role === "teacher") {
@@ -212,7 +222,159 @@ const generateToken = (user, role) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    // find user (student or teacher)
+    let user =
+      (await Student.findById(userId)) ||
+      (await Teacher.findById(userId));
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // check old password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password incorrect" });
+    }
+
+    // hash new password
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashed;
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const sendResetOtp = async (req, res) => {
+  try {
+
+    const userId = req.user.id;
+
+    const user =
+      (await Student.findById(userId)) ||
+      (await Teacher.findById(userId));
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+// hash OTP before storing
+const hashedOtp = await bcrypt.hash(otp, 10);
+
+await Otp.deleteMany({ userId });
+
+await Otp.create({
+  userId,
+  otp: hashedOtp,
+  expiresAt: Date.now() + 10 * 60 * 1000
+});
+
+    await sendOtpEmail(user.email, otp);
+
+    res.json({
+      message: "OTP sent successfully"
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      message: "Failed to send OTP"
+    });
+  }
+};
+
+
+const verifyResetOtp = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { otp } = req.body;
+
+    const record = await Otp.findOne({ userId });
+
+    if (!record) {
+      return res.status(400).json({ message: "OTP not found" });
+    }
+
+    if (record.expiresAt < Date.now()) {
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+   const valid = await bcrypt.compare(otp, record.otp);
+
+if (!valid) {
+  return res.status(400).json({ message: "Invalid OTP" });
+}
+
+    res.json({ message: "OTP verified" });
+
+  } catch (err) {
+    res.status(500).json({ message: "Verification failed" });
+  }
+};
+
+
+const resetPasswordWithOtp = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { otp, newPassword } = req.body;
+    if (newPassword.length < 8) {
+  return res.status(400).json({
+    message: "Password must be at least 8 characters"
+  });
+}
+
+    const record = await Otp.findOne({ userId });
+
+   if (!record) {
+  return res.status(400).json({ message: "OTP not found" });
+}
+
+if (record.expiresAt < Date.now()) {
+  return res.status(400).json({ message: "OTP expired" });
+}
+
+const valid = await bcrypt.compare(otp, record.otp);
+
+if (!valid) {
+  return res.status(400).json({ message: "Invalid OTP" });
+}
+
+    const user =
+      (await Student.findById(userId)) ||
+      (await Teacher.findById(userId));
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashed;
+    await user.save();
+
+    await Otp.deleteMany({ userId });
+
+    res.json({ message: "Password updated successfully" });
+
+  } catch (err) {
+    res.status(500).json({ message: "Reset failed" });
+  }
+};
+
 module.exports = {
   signin,
-  signup,getMe,
+  signup,getMe,changePassword,sendResetOtp,verifyResetOtp,resetPasswordWithOtp
 };

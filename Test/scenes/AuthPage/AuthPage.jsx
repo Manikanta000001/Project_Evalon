@@ -44,7 +44,7 @@ const AuthPage = () => {
       });
 
       const data = await res.json();
-      console.log(data)
+      console.log("The data",data)
 
       if (!res.ok) {
         throw new Error(data.message || "Something went wrong");

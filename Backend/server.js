@@ -7,6 +7,10 @@ const ExamRoute = require("./routes/Exam.route");
 const Attemptroute = require("./routes/StudentExam.attempt.route");
 const Resultroute = require("./routes/Results.route");
 const Teachertroute = require("./routes/TeacherExam.route");
+const questionBankRoutes = require("./routes/questionBank.routes");
+const PaperRoute = require("./routes/Paper.route");
+const DashboardRoute = require("./routes/Dashboard.route");
+
 
 dotenv.config();
 connectDB();
@@ -27,6 +31,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/attempt", Attemptroute);
 app.use("/api/results", Resultroute);
 app.use("/api/teacher", Teachertroute);
+app.use("/api/question-banks", questionBankRoutes);
+app.use("/api/papers", PaperRoute);
+app.use("/api/dashboard", DashboardRoute);
 app.use("/api", ExamRoute);
 
 const PORT = process.env.PORT || 5000;

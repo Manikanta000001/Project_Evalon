@@ -4,23 +4,38 @@ const router = express.Router();
 const {
   startExam,
   saveAnswer,
-  submitExam,getMyResults
+  submitExam,
+  getMyResults
 } = require("../controllers/exam.controller");
 
 const {
   protect,
-  isStudent
+  authorizeRoles
 } = require("../middleware/authMiddleware");
 
-// 🟢 Start / Resume Exam
-router.post("/start", protect, isStudent, startExam);
 
-// 🟡 Save answer (autosave)
-router.patch("/save", protect, isStudent, saveAnswer);
+// 🟢 Start / Resume Exam (Student only)
+router.post(
+  "/start",
+  protect,
+  authorizeRoles("student"),
+  startExam
+);
 
-// 🔴 Submit exam
-router.post("/submit", protect, isStudent, submitExam);
+// 🟡 Save answer (autosave) (Student only)
+router.patch(
+  "/save",
+  protect,
+  authorizeRoles("student"),
+  saveAnswer
+);
 
-
+// 🔴 Submit exam (Student only)
+router.post(
+  "/submit",
+  protect,
+  authorizeRoles("student"),
+  submitExam
+);
 
 module.exports = router;

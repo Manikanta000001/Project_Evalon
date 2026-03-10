@@ -1,6 +1,6 @@
-const jwt=require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
- const protect = (req, res, next) => {
+const protect = (req, res, next) => {
   let token;
 
   if (
@@ -16,21 +16,11 @@ const jwt=require('jsonwebtoken')
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-   
-
-    /*
-      decoded = {
-        id,
-        role,
-        collegeId,
-        iat,
-        exp
-      }
-    */
 
     req.user = {
       id: decoded.id,
-      role: decoded.role,
+      role: decoded.role, // single primary role
+      roles: decoded.roles || [decoded.role], // multi-role support
       collegeId: decoded.collegeId
     };
 
@@ -40,26 +30,25 @@ const jwt=require('jsonwebtoken')
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
- const isAdmin = (req, res, next) => {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Admin access only" });
-  }
-  next();
+
+const authorizeRoles = (...allowedRoles) => {
+  return (req, res, next) => {
+
+    const userRoles = req.user.roles || [];
+
+    const hasAccess = allowedRoles.some(role =>
+      userRoles.includes(role)
+    );
+
+    if (!hasAccess) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    next();
+  };
 };
 
- const isTeacher = (req, res, next) => {
-  if (req.user.role !== "teacher") {
-    return res.status(403).json({ message: "Teacher access only" });
-  }
-  next();
+module.exports = {
+  protect,
+  authorizeRoles
 };
-
- const isStudent = (req, res, next) => {
-  if (req.user.role !== "student") {
-    return res.status(403).json({ message: "Student access only" });
-  }
-  next();
-};
-module.exports={
-  protect,isAdmin,isTeacher,isStudent
-}
