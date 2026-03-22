@@ -191,7 +191,7 @@ export default function AssessmentStudio() {
         questions: allQuestions,
       };
 
-      const res = await fetch("http://localhost:5000/api/exams", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}0/api/exams`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

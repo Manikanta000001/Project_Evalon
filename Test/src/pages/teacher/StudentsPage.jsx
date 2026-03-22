@@ -38,7 +38,7 @@ const StudentsPage = () => {
   useEffect(() => {
     const fetchExams = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/teacher/exams", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/teacher/exams`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

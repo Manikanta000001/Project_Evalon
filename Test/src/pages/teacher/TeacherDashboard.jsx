@@ -43,7 +43,7 @@ export default function TeacherDashboard() {
       const token = JSON.parse(localStorage.getItem("userdata"))?.token;
 
       const res = await axios.get(
-        "http://localhost:5000/api/dashboard/teacher",
+        `${import.meta.env.VITE_API_URL}/api/dashboard/teacher`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },

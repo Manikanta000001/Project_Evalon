@@ -32,7 +32,7 @@ const BankStatusComp = () => {
         const token = JSON.parse(localStorage.getItem("userdata"))?.token;
 
         const res = await axios.get(
-          "http://localhost:5000/api/question-banks/my-submissions",
+          `${import.meta.env.VITE_API_URL}/api/question-banks/my-submissions`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

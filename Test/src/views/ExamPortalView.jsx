@@ -76,7 +76,7 @@ export default function ExamPortalView() {
         alert("⚠️ You exited fullscreen.");
 
         try {
-          const res = await fetch("http://localhost:5000/api/attempt/flag", {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/attempt/flag`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
@@ -170,7 +170,7 @@ export default function ExamPortalView() {
 
     // 2. Save to backend (autosave)
     try {
-      await fetch("http://localhost:5000/api/attempt/save", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/attempt/save`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -217,7 +217,7 @@ export default function ExamPortalView() {
 
     setIsSubmitting(true);
     try {
-      await fetch("http://localhost:5000/api/attempt/submit", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/attempt/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -248,7 +248,7 @@ export default function ExamPortalView() {
   // start exam api
   const startExam = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/attempt/start", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/attempt/start`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

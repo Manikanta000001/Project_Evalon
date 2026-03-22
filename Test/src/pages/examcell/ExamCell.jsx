@@ -25,7 +25,7 @@ const ExamCell = () => {
       const token = localStorage.getItem("token");
 
       const res = await axios.get(
-        "http://localhost:5000/api/dashboard/examcell",
+        `${import.meta.env.VITE_API_URL}/api/dashboard/examcell`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

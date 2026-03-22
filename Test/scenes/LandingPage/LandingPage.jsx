@@ -14,6 +14,7 @@ import img7 from "../../public/ana15.svg";
 export default function CapsuleMediaLanding() {
   const [randomImage, setRandomImage] = useState(null);
   
+  
   const images = [img2, img3, img5, img6, img7, img4, img1];
   
   useEffect(() => {

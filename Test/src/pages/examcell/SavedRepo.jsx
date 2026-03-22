@@ -46,7 +46,7 @@ const SavedRepo = () => {
   const [papers, setPapers] = useState([]);
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:5000/api/papers")
+      .get(`${import.meta.env.VITE_PYTHON_API_URL}/api/papers`)
       .then((res) => setPapers(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -114,7 +114,7 @@ const SavedRepo = () => {
     });
   }, [papers, activeDepartment, activeType, searchQuery]);
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+
 
   const handlePreview = (paper) => {
     setSelectedPaper(paper);

@@ -144,7 +144,7 @@ const handleUpload = async () => {
     formDataToSend.append("file", file); // IMPORTANT: backend expects "file"
 
     const response = await axios.post(
-      "http://localhost:5000/api/question-banks/upload",
+     `${import.meta.env.VITE_API_URL}/api/question-banks/upload`,
       formDataToSend,
       {
         headers: {

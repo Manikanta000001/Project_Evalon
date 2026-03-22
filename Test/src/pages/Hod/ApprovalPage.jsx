@@ -45,7 +45,7 @@ const ApprovalPage = () => {
         const token = JSON.parse(localStorage.getItem("userdata"))?.token;
 
         const response = await axios.get(
-          "http://localhost:5000/api/question-banks/pending",
+          `${import.meta.env.VITE_API_URL}/api/question-banks/pending`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ const ApprovalPage = () => {
 
       // Refresh list
       const refreshed = await axios.get(
-        "http://localhost:5000/api/question-banks/pending",
+        `${import.meta.env.VITE_API_URL}/api/question-banks/pending`,
         {
           headers: { Authorization: `Bearer ${token}` },
         },

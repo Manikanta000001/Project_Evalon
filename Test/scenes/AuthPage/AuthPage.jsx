@@ -29,8 +29,8 @@ const AuthPage = () => {
 
     try {
       const url = isSignup
-        ? "http://localhost:5000/api/auth/signup"
-        : "http://localhost:5000/api/auth/signin";
+        ? `${import.meta.env.VITE_API_URL}/api/auth/signup`
+        : `${import.meta.env.VITE_API_URL}/api/auth/signin`;
 
       const body = isSignup
         ? { name, email, password,role}

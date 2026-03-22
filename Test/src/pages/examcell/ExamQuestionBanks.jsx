@@ -44,7 +44,7 @@ const ExamQuestionBanks = () => {
         const token = JSON.parse(localStorage.getItem("userdata"))?.token;
 
         const response = await axios.get(
-          "http://localhost:5000/api/question-banks/approved",
+          `${import.meta.env.VITE_API_URL}/api/question-banks/approved`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
