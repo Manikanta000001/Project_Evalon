@@ -46,7 +46,7 @@ const SavedRepo = () => {
   const [papers, setPapers] = useState([]);
   useEffect(() => {
     axios
-      .get(`${import.meta.env.VITE_PYTHON_API_URL}/api/papers`)
+      .get(`${import.meta.env.VITE_API_URL}/api/papers`)
       .then((res) => setPapers(res.data))
       .catch((err) => console.error(err));
   }, []);
@@ -253,7 +253,7 @@ const SavedRepo = () => {
         {filteredPapers.length > 0 ? (
           filteredPapers.map((paper) => (
             <div
-              key={paper.id}
+              key={paper._id || paper.id}
               className={`group p-6 rounded-2xl border transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl
               ${
                 darkMode
