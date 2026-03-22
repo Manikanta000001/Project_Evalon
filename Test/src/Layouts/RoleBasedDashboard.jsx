@@ -2,11 +2,13 @@
 import TeacherDashboard from "../pages/teacher/TeacherDashboard";
 import Examcell from "../pages/examcell/ExamCell";
 import HoadDashboard from "../pages/Hod/HoadDashboard";
+import { useNavigate } from "react-router-dom";
 
 
 export default function RoleBasedDashboard() {
   const user = JSON.parse(localStorage.getItem("userdata"));
-  if (!user) return null;
+    const navigate = useNavigate();
+ 
   const roles = user.roles || [];
  
 

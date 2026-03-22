@@ -36,6 +36,7 @@ export default function DashboardLayout() {
 
   // highlight active item
   const path = location.pathname;
+  const token = localStorage.getItem("token");
 
   // add/remove body dark background
   useEffect(() => {
@@ -46,6 +47,9 @@ export default function DashboardLayout() {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userdata"));
     setUser(storedUser);
+    if(!token){
+    navigate("/")
+  }
   }, []);
 
   useEffect(() => {

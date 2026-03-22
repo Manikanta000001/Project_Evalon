@@ -26,9 +26,12 @@ export default function StudentLayout() {
     return window.innerWidth < 768; // collapse on mobile
   });
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const token = localStorage.getItem("token");
+  
 
   const navigate = useNavigate();
   const location = useLocation();
+
 
   useEffect(() => {
     if (isDarkMode) document.body.classList.add("bg-slate-950");
@@ -37,6 +40,9 @@ export default function StudentLayout() {
 
 
     useEffect(() => {
+        if(!token){
+    navigate("/")
+  }
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setIsCollapsed(true);   // mobile → closed
