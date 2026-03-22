@@ -314,7 +314,7 @@ export default function Generation() {
       form.append("exam_type", formData.examType);
       console.log(formData.examType)
 
-      const res = await axios.post("http://127.0.0.1:8000/process", form);
+      const res = await axios.post(`${import.meta.env.VITE_PYTHON_API_URL}/process`, form);
 
       // 🔑 store backend response AS-IS
       setBackendResult(res.data);
