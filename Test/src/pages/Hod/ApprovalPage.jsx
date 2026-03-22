@@ -69,8 +69,8 @@ const ApprovalPage = () => {
 
       const endpoint =
         actionType === "approve"
-          ? `http://localhost:5000/api/question-banks/${selectedDoc._id}/approve`
-          : `http://localhost:5000/api/question-banks/${selectedDoc._id}/reject`;
+          ? `${import.meta.env.VITE_API_URL}/api/question-banks/${selectedDoc._id}/approve`
+          : `${import.meta.env.VITE_API_URL}/api/question-banks/${selectedDoc._id}/reject`;
 
       await axios.put(
         endpoint,
