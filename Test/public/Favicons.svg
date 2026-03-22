@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <clipPath id="round">
+    <rect width="100" height="100" rx="20" ry="20"/>
+  </clipPath>
+
+  <image href="Favicons.png" width="100" height="100" clip-path="url(#round)"/>
+</svg>
