@@ -237,6 +237,7 @@ if (!attempt.questionOrder || attempt.questionOrder.length === 0) {
         startedAt: attempt.startedAt,
         durationMinutes: exam.durationMinutes,
         answers: attempt.answers,
+          flags: attempt.flags || 0,
         questions: orderedQuestions.map(q => ({
   questionId: q._id,
   type: q.type,
@@ -307,6 +308,7 @@ if (!attempt.questionOrder || attempt.questionOrder.length === 0) {
       resume: false,
       startedAt: attempt.startedAt,
       durationMinutes: exam.durationMinutes,
+        flags:  0,
 questions: finalQuestions.map(q => ({
   questionId: q._id,
   type: q.type,
@@ -343,89 +345,6 @@ testCases:
     });
   }
 };
-
-// const submitExam = async (req, res) => {
-//   try {
-//     const {
-//       attemptId,
-//       answers,
-//       codingMarks = {}
-//     } = req.body;
-
-//     const attempt = await Attempt.findById(attemptId);
-//     if (!attempt || attempt.status === "submitted") {
-//       return res.status(400).json({
-//         message: "Invalid attempt"
-//       });
-//     }
-
-//     const exam = await Exam.findById(attempt.examId);
-//  const questions = await Question.find({
-//   _id: { $in: attempt.questionOrder }
-// });
-
-// let mcqScore = 0;
-// let totalMCQ = 0;
-// let codingScore = 0;
-// let totalCodingMarks = 0;
-
-// questions.forEach(q => {
-
-//   if (q.type === "mcq") {
-//     totalMCQ++;
-//     if (answers[q._id] === q.correctOptionIndex) {
-//       mcqScore++;
-//     }
-//   }
-
-//   if (q.type === "coding") {
-//     totalCodingMarks += q.marks || 0;
-
-//     if (codingMarks[q._id]) {
-//       codingScore += codingMarks[q._id];
-//     }
-//   }
-// });
-
-
-
-//     attempt.answers = answers;
-//     attempt.status = "submitted";
-//     attempt.submittedAt = new Date();
-//     await attempt.save();
-
-//   const percentage = totalMCQ > 0
-//   ? Math.round((score / totalMCQ) * 100)
-//   : 0;
-
-//     const passed = percentage >= exam.passPercentage;
-
-//  await Result.create({
-//   attemptId,
-//   examId: attempt.examId,
-//   studentId: attempt.studentId,
-//   score,
-//   total: totalMCQ,
-//   percentage,
-//   passed
-// });
-
-
-//     res.json({
-//       success: true,
-//       score,
-//       total: totalMCQ,
-//       percentage,
-//       passed
-//     });
-
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({
-//       message: "Submission failed"
-//     });
-//   }
-// };
 
 const submitExam = async (req, res) => {
   try {

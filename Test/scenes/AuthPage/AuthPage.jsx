@@ -162,12 +162,12 @@ const AuthPage = () => {
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          {isSignup ? "Already have an account?" : "Don’t have an account?"}{" "}
+          {isSignup ? "Already have an account?" : ""}{" "}
           <button
             onClick={() => setIsSignup(!isSignup)}
             className="text-blue-600 font-semibold hover:underline"
           >
-            {isSignup ? "Login" : "Sign Up"}
+            {isSignup ? "Login" : ""}
           </button>
         </p>
       </div>

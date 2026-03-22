@@ -3,6 +3,8 @@ import { useOutletContext } from "react-router-dom";
 import axios from "axios";
 import Preview from "../../components/Preview";
 import PreviewContainer from "../../components/PreviewContainer.jsx";
+import { toPng } from "html-to-image";
+import jsPDF from "jspdf";
 import {
   Search,
   Sun,
@@ -25,6 +27,7 @@ const SavedRepo = () => {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [selectedPaper, setSelectedPaper] = useState(null);
   const [isDeptDropdownOpen, setIsDeptDropdownOpen] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100);
 
   const dropdownRef = useRef(null);
 
@@ -47,34 +50,69 @@ const SavedRepo = () => {
       .then((res) => setPapers(res.data))
       .catch((err) => console.error(err));
   }, []);
+
+
+  const downloadPDF = async () => {
+    const node = document.getElementById("printable-paper");
+
+    const dataUrl = await toPng(node, {
+      backgroundColor: "#fff",
+      pixelRatio: 2,
+    });
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const img = new Image();
+    img.src = dataUrl;
+
+    img.onload = () => {
+      const imgHeight = (img.height * pageWidth) / img.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > pageHeight) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save("Exam_Paper.pdf");
+    };
+  };
+
   console.log("the papers", papers);
 
   const departments = ["All", "CSE", "ECE", "MECH"];
 
-const filteredPapers = useMemo(() => {
-  return papers.filter((paper) => {
-    const matchesDept =
-      activeDepartment === "All" ||
-      paper.meta.department === activeDepartment;
+  const filteredPapers = useMemo(() => {
+    return papers.filter((paper) => {
+      const matchesDept =
+        activeDepartment === "All" ||
+        paper.meta.department === activeDepartment;
 
-    const matchesType =
-      activeType === "All" ||
-      paper.meta.examType
-        .toLowerCase()
-        .includes(activeType.toLowerCase());
+      const matchesType =
+        activeType === "All" ||
+        paper.meta.examType.toLowerCase().includes(activeType.toLowerCase());
 
-    const matchesSearch =
-      paper.meta.courseName
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      (paper.meta.courseId &&
-        paper.meta.courseId
+      const matchesSearch =
+        paper.meta.courseName
           .toLowerCase()
-          .includes(searchQuery.toLowerCase()));
+          .includes(searchQuery.toLowerCase()) ||
+        (paper.meta.courseId &&
+          paper.meta.courseId
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()));
 
-    return matchesDept && matchesType && matchesSearch;
-  });
-}, [papers, activeDepartment, activeType, searchQuery]);
+      return matchesDept && matchesType && matchesSearch;
+    });
+  }, [papers, activeDepartment, activeType, searchQuery]);
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
@@ -193,7 +231,7 @@ const filteredPapers = useMemo(() => {
             </span>
           </div>
           <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-            {["All", "Mid", "Assignment"].map((type) => (
+            {["All", "Mid", "Assignment", "Objective"].map((type) => (
               <button
                 key={type}
                 onClick={() => setActiveType(type)}
@@ -293,10 +331,11 @@ const filteredPapers = useMemo(() => {
         ) : (
           <PreviewContainer
             isDark={darkMode}
-            zoomLevel={100}
-            setZoomLevel={() => {}}
+             showSave = {false}
+            zoomLevel={zoomLevel}
+            setZoomLevel={setZoomLevel}
             triggerSave={() => {}}
-            triggerDownload={() => {}}
+            triggerDownload={downloadPDF}
             onExit={() => setCurrentPage("dashboard")}
           >
             {selectedPaper && (

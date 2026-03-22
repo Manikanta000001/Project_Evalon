@@ -4,24 +4,67 @@ import CapturePane from "./Pannels/CapturePane";
 import ExamPaper from "./Pannels/ExamPaper";
 
 // utils/transformBackendExam.js
-function transformBackendExam(backendData) {
+// function transformBackendExam(backendData) {
+//   if (!backendData?.units) return [];
+
+//   const questions = [];
+//   let qId = 1;
+
+//   Object.values(backendData.units).forEach((unitQs) => {
+//     for (let i = 0; i < unitQs.length; i += 2) {
+//       if (!unitQs[i] || !unitQs[i + 1]) continue;
+
+//       questions.push({
+//         id: qId++,
+//         options: [
+//           { sub: "A", text: unitQs[i].text, co: "2", bl: "3", marks: "10" },
+//           { sub: "B", text: unitQs[i + 1].text, co: "1", bl: "3", marks: "10" },
+//         ],
+//       });
+//     }
+//   });
+
+//   return questions;
+// }
+function transformBackendExam(backendData, examType) {
   if (!backendData?.units) return [];
+
+  const isObjective = examType?.toLowerCase().includes("objective");
 
   const questions = [];
   let qId = 1;
 
   Object.values(backendData.units).forEach((unitQs) => {
-    for (let i = 0; i < unitQs.length; i += 2) {
-      if (!unitQs[i] || !unitQs[i + 1]) continue;
 
-      questions.push({
-        id: qId++,
-        options: [
-          { sub: "A", text: unitQs[i].text, co: "2", bl: "3", marks: "10" },
-          { sub: "B", text: unitQs[i + 1].text, co: "1", bl: "3", marks: "10" },
-        ],
+    // ✅ OBJECTIVE → no pairing
+    if (isObjective) {
+      unitQs.forEach((q) => {
+        questions.push({
+          qno: q.qno || qId,
+          text: q.text,
+          co: "-",     // you can improve later
+          bl: "-",
+          marks: "5",
+        });
+        qId++;
       });
     }
+
+    // ✅ SUBJECTIVE → pair A/B
+    else {
+      for (let i = 0; i < unitQs.length; i += 2) {
+        if (!unitQs[i] || !unitQs[i + 1]) continue;
+
+        questions.push({
+          id: qId++,
+          options: [
+            { sub: "A", text: unitQs[i].text, co: "2", bl: "3", marks: "10" },
+            { sub: "B", text: unitQs[i + 1].text, co: "1", bl: "3", marks: "10" },
+          ],
+        });
+      }
+    }
+
   });
 
   return questions;
@@ -111,7 +154,7 @@ const Preview = ({ backendData: data, meta, ref }) => {
       "Figures indicate CO, BL & Marks.",
     ],
 
-    questions: transformBackendExam(data),
+    questions: transformBackendExam(data,meta.examType),
   };
 
   return (
@@ -119,7 +162,7 @@ const Preview = ({ backendData: data, meta, ref }) => {
       {/* RIGHT: PREVIEW */}
 
       {/* <PreviewPane data={paperData} scale={scale} /> */}
-      <ExamPaper data={paperData} />
+      <ExamPaper data={paperData}/>
       <CapturePane data={paperData} ref={ref} />
 
       {/* HIDDEN CAPTURE */}

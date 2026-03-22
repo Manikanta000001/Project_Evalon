@@ -55,6 +55,7 @@ const statusFilters = [
 useEffect(() => {
 
   const fetchDashboard = async () => {
+    
 
     const token = localStorage.getItem("token");
 
@@ -72,8 +73,11 @@ useEffect(() => {
   };
 
   fetchDashboard();
+  
 
 }, []);
+console.log(documents)
+
 
   const [filter, setFilter] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,12 +90,17 @@ useEffect(() => {
     { name: 'Rejected', value: stats.rejected, color: '#ef4444' },
   ];
 
-  const filteredDocs = documents.filter(doc => {
-    const matchesFilter = filter === 'All' || doc.status === filter;
-    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         doc.uploadedBy?.name.toLowerCase().includes(searchTerm.toLowerCase());
+const filteredDocs = documents
+  .filter(doc => {
+    const matchesFilter = filter === "All" || doc.status === filter;
+
+    const matchesSearch =
+      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (doc.uploadedBy?.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+
     return matchesFilter && matchesSearch;
-  });
+  })
+  .slice(0, searchTerm ? documents.length : 10);
 
 const getStatusColor = (status) => {
 
@@ -142,20 +151,20 @@ const getStatusColor = (status) => {
       {/* Sidebar */}
       <nav className={`fixed left-0 top-0 h-full w-64 border-r hidden lg:block z-10 transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="p-6">
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="flex items-center gap-2 md:gap-3 mb-10">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
               <FileText className="text-white w-6 h-6" />
             </div>
             <span className={`font-bold text-xl tracking-tight ${isDarkMode ? 'text-blue-400' : 'text-blue-900'}`}>EduApprove</span>
           </div>
           <ul className="space-y-2">
-            <li className={`p-3 rounded-lg font-medium flex items-center gap-3 cursor-pointer ${isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
+            <li className={`p-3 rounded-lg font-medium flex items-center gap-2 md:gap-3 cursor-pointer ${isDarkMode ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
               <Clock className="w-5 h-5" /> Dashboard
             </li>
-            <li className={`p-3 rounded-lg font-medium flex items-center gap-3 cursor-pointer transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50'}`}>
+            <li className={`p-3 rounded-lg font-medium flex items-center gap-2 md:gap-3 cursor-pointer transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50'}`}>
               <BarChart2 className="w-5 h-5" /> Analytics
             </li>
-            <li className={`p-3 rounded-lg font-medium flex items-center gap-3 cursor-pointer transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50'}`}>
+            <li className={`p-3 rounded-lg font-medium flex items-center gap-2 md:gap-3 cursor-pointer transition-all ${isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50'}`}>
               <User className="w-5 h-5" /> Faculty
             </li>
           </ul>
@@ -181,7 +190,7 @@ const getStatusColor = (status) => {
                 transition={{ delay: idx * 0.1 }}
                 className={`p-6 rounded-2xl border shadow-sm transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}
               >
-                <div className={`${item.bg} w-10 h-10 rounded-lg flex items-center justify-center mb-4`}>
+                <div className={`${item.bg} w-8 h-8 md:w-10 md:h-10 rounded-lg flex items-center justify-center mb-4`}>
                   <item.icon className={`w-5 h-5 ${item.color}`} />
                 </div>
                 <p className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>{item.value}</p>
@@ -233,7 +242,7 @@ const getStatusColor = (status) => {
               <button
                 key={item.value}
                 onClick={() => setFilter(item.value)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all whitespace-nowrap ${
+                className={`px-5 py-2 rounded-xl text-xs md:text-sm font-bold transition-all whitespace-nowrap ${
                   filter === item.value 
                     ? (isDarkMode ? 'bg-blue-600 text-white shadow-lg' : 'bg-blue-600 text-white shadow-lg')
                     : (isDarkMode ? 'text-slate-400 hover:bg-slate-800' : 'text-slate-500 hover:bg-slate-50')
@@ -259,29 +268,29 @@ const getStatusColor = (status) => {
 
         <div className={`rounded-2xl border shadow-sm overflow-hidden transition-colors ${isDarkMode ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="min-w-[600px] md:min-w-full text-left border-collapse">
               <thead>
                 <tr className={`text-[10px] font-bold uppercase tracking-widest ${isDarkMode ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-                  <th className="px-6 py-4">Document Details</th>
-                  <th className="px-6 py-4">Faculty Member</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Subject</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4">Document Details</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4">Faculty Member</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4">Status</th>
+                  <th className="px-3 md:px-6 py-3 md:py-4 hidden md:table-cell">Subject</th>
                 </tr>
               </thead>
               <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-100'}`}>
              
                   {filteredDocs.map((doc) => (
                     <motion.tr 
-                      layout
+                      transition={{ duration: 0.2 }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       key={doc._id} 
                       className={`transition-colors cursor-default group ${isDarkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50/50'}`}
                     >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-blue-400 group-hover:bg-blue-600 group-hover:text-white' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'}`}>
+                      <td className="px-3 md:px-6 py-3 md:py-4 hidden md:table-cell">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center transition-colors ${isDarkMode ? 'bg-slate-800 text-blue-400 group-hover:bg-blue-600 group-hover:text-white' : 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white'}`}>
                             <FileText className="w-5 h-5 transition-colors" />
                           </div>
                           <div>
@@ -290,16 +299,16 @@ const getStatusColor = (status) => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className={`text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{doc.uploadedBy?.name}</p>
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <p className={`text-xs md:text-sm font-bold ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{doc.uploadedBy?.name}</p>
                         <p className="text-xs text-slate-400 font-medium">{new Date(doc.createdAt).toLocaleDateString()}</p>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <span className={`px-3 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border ${getStatusColor(doc.status)}`}>
                           {statusLabelMap[doc.status] || doc.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${
                             doc.priority === 'High' ? 'bg-rose-500 animate-pulse' : doc.priority === 'Medium' ? 'bg-amber-500' : (isDarkMode ? 'bg-slate-700' : 'bg-slate-300')

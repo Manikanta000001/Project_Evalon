@@ -30,7 +30,6 @@ import { useNavigate } from "react-router-dom";
 import { COLORS } from "../../data/mockData";
 
 import { useOutletContext } from "react-router-dom";
-let cachedDashboard = null;
 export default function TeacherDashboard() {
   // 🔥 get dark mode value from DashboardLayout
   const { dark: isDarkMode, setActiveTab } = useOutletContext() || {};
@@ -39,15 +38,7 @@ export default function TeacherDashboard() {
   // const location = useLocation();
 
   useEffect(() => {
-    if (cachedDashboard) {
-      setDashboardData(cachedDashboard);
-
-      setTimeout(() => {
-        setShowChart(true);
-      }, 120);
-
-      return;
-    }
+  
     const fetchDashboard = async () => {
       const token = JSON.parse(localStorage.getItem("userdata"))?.token;
 
@@ -58,7 +49,7 @@ export default function TeacherDashboard() {
         },
       );
 
-      cachedDashboard = res.data;
+     
       setDashboardData(res.data);
 
       setTimeout(() => {
@@ -276,17 +267,17 @@ export default function TeacherDashboard() {
         <Card title="Assessment Overview" isDarkMode={isDarkMode}>
           <div className="text-center grid grid-cols-3">
             <div>
-              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData.assessmentStats.created}</p>
+              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData?.assessmentStats?.created}</p>
               <p className="text-xs">Assessments Created</p>
             </div>
 
             <div>
-              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData.assessmentStats.active}</p>
+              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData?.assessmentStats?.active}</p>
               <p className="text-xs">Active Exams</p>
             </div>
 
             <div>
-              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData.assessmentStats.completed}</p>
+              <p className="text-2xl font-bold text-brandBlue-500">{dashboardData?.assessmentStats?.completed}</p>
               <p className="text-xs">Completed</p>
             </div>
           </div>

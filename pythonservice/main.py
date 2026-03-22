@@ -1,43 +1,10 @@
-# # main.py
-# from fastapi import FastAPI, UploadFile, File, Form
-# from extractor import extract_questions_from_docx
-# from selector import select_questions_per_unit
-# from fastapi.middleware.cors import CORSMiddleware
-
-
-# app = FastAPI()
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=["http://localhost:5173"],  # React dev server
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-# @app.post("/process")
-# async def process_question_bank(
-#     file: UploadFile = File(...),
-#     exam_type: str = Form("assignment")
-# ):
-#     file_bytes = await file.read()
-
-#     extracted = extract_questions_from_docx(file_bytes)
-
-#     # Prototype logic
-#     questions_per_unit = 4 if exam_type == "assignment" else 6
-#     selected = select_questions_per_unit(extracted, questions_per_unit)
-
-#     return {
-#         "examType": exam_type,
-#         "units": selected
-#     }
-
 
 
 # main.py
 from fastapi import FastAPI, UploadFile, File, Form
 from extractor import extract_questions_from_docx, validate_question_bank_docx
 
-from selector import select_questions_per_unit,select_mid_1,select_mid_2
+from selector import select_questions_per_unit,select_mid_1,select_mid_2,select_objective_1,select_objective_2
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -52,7 +19,9 @@ app.add_middleware(
 @app.post("/process")
 async def process_question_bank(
     file: UploadFile = File(...),
-    exam_type: str = Form("assignment")
+    # exam_type: str = Form("assignment")
+    exam_type: str = Form(...)
+    
 ):
     file_bytes = await file.read()
         # ✅ VALIDATE FIRST
@@ -64,31 +33,76 @@ async def process_question_bank(
         }
 
     extracted = extract_questions_from_docx(file_bytes)
+    print("Exam type received:", exam_type)
 
-    if exam_type == "assignment":
+    # if exam_type == "assignment":
         # frontend sends unit
-        selected = select_questions_per_unit(extracted, 4)
-        selected = {"UNIT-I": selected.get("UNIT-I", [])}
+        # selected = select_questions_per_unit(extracted, 4)
+        # selected = {"UNIT-I": selected.get("UNIT-I", [])}
 
-    elif exam_type == "mid-1":
+    if exam_type.startswith("Assignment"):
+        assignment_unit_map = {
+            "Assignment 1": "UNIT-I",
+            "Assignment 2": "UNIT-II",
+            "Assignment 3": "UNIT-III",
+            "Assignment 4": "UNIT-IV",
+            "Assignment 5": "UNIT-V",
+        }
+
+        unit = assignment_unit_map.get(exam_type)
+
+        if not unit:
+            return {
+                "error": "Invalid assignment type",
+                "message": f"Unknown exam type: {exam_type}"
+            }
+
+        selected = select_questions_per_unit(extracted, 4)
+        selected = {unit: selected.get(unit, [])}
+
+
+    elif exam_type == "Mid 1":
         try:
             selected = select_mid_1(extracted)
         except ValueError as e:
             return {
-        "error": "Insufficient questions",
-        "message": str(e)
-    }
+                "error": "Insufficient questions",
+                "message": str(e)
+            }
 
-    elif exam_type == "mid-2":
+    elif exam_type == "Mid 2":
         selected = select_mid_2(extracted)
-    print(selected)
 
+    elif exam_type == "Objective 1":
+        try:
+            print("hello")
+            selected = select_objective_1(extracted)
+        except ValueError as e:
+            return {
+                "error": "Insufficient questions",
+                "message": str(e)
+        }
 
-    # ✅ TEMP: return ONLY UNIT-I
+    elif exam_type == "Objective 2":
+        print("hi")
+        try:
+            selected = select_objective_2(extracted)
+            print(selected)
+        except ValueError as e:
+            print("ERROR:", e)
+            return {
+                "error": "Insufficient questions",
+                "message": str(e)
+        }
+    else:
+        return {
+            "error": "Invalid exam type",
+            "message": f"Unsupported exam type: {exam_type}"
+        }
 
+    print("The seleted questions",selected)
 
     return {
         "examType": exam_type,
         "units": selected
     }
-

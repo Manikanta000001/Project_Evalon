@@ -2,16 +2,27 @@
 import React from "react";
 import Banner from "../necnbanner.png";
 const ExamPaper = ({ data: paperData }) => {
+  console.log("the paper data", paperData);
 
   const formatDepartments = (arr) => {
-  if (!arr || arr.length === 0) return "";
+    if (!arr || arr.length === 0) return "";
 
-  if (arr.length === 1) return arr[0];
+    if (arr.length === 1) return arr[0];
 
-  if (arr.length === 2) return `${arr[0]} & ${arr[1]}`;
+    if (arr.length === 2) return `${arr[0]} & ${arr[1]}`;
 
-  return `${arr.slice(0, -1).join(", ")} & ${arr[arr.length - 1]}`;
-};
+    return `${arr.slice(0, -1).join(", ")} & ${arr[arr.length - 1]}`;
+  };
+
+  const getRandomCOBL = () => {
+    const values = ["2", "3"];
+    return {
+      co: values[Math.floor(Math.random() * values.length)],
+      bl: values[Math.floor(Math.random() * values.length)],
+    };
+  };
+
+  const isObjective = paperData.examType?.toUpperCase().includes("OBJECTIVE");
   return (
     <div className="bg-white text-black font-serif">
       {/* PASTE ONLY THE PAPER CONTENT */}
@@ -73,11 +84,12 @@ const ExamPaper = ({ data: paperData }) => {
                 <span className="text-gray-500 uppercase text-[9px]">
                   Course:
                 </span>
-                <span>{paperData.courseName}
-                  <span className="font-sans">{paperData.courseId && ` (${paperData.courseId})`}</span>
+                <span>
+                  {paperData.courseName}
+                  <span className="font-sans">
+                    {paperData.courseId && ` (${paperData.courseId})`}
+                  </span>
                 </span>
-                
-                
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500 uppercase text-[9px]">
@@ -122,7 +134,10 @@ const ExamPaper = ({ data: paperData }) => {
           <thead className="bg-gray-100 print:bg-transparent">
             <tr className="border-b border-black">
               <th className="border-r border-black w-10 py-1">Q.No</th>
-              <th className="border-r border-black w-10 py-1">Sub</th>
+              {/* <th className="border-r border-black w-10 py-1">Sub</th> */}
+              {!isObjective && (
+                <th className="border-r border-black w-10 py-1">Sub</th>
+              )}
               <th className="border-r border-black px-4 py-1 text-center uppercase tracking-widest text-[10px]">
                 Question Description
               </th>
@@ -136,62 +151,103 @@ const ExamPaper = ({ data: paperData }) => {
             </tr>
           </thead>
           <tbody>
-            {paperData.questions.map((q) => (
-              <React.Fragment key={q.id}>
-                {/* Option A */}
-                <tr className="border-b border-black">
-                  <td
-                    className="border-r border-black text-center font-bold align-middle"
-                    rowSpan={3}
-                  >
-                    {q.id}
-                  </td>
-                  <td className="border-r border-black text-center font-bold p-2">
-                    (A)
-                  </td>
-                  <td className="border-r border-black p-3 text-left leading-relaxed">
-                    {q.options[0].text}
-                  </td>
-                  <td className="border-r border-black text-center font-medium">
-                    {q.options[0].co}
-                  </td>
-                  <td className="border-r border-black text-center font-medium">
-                    {q.options[0].bl}
-                  </td>
-                  <td className="text-center font-bold italic">
-                    {q.options[0].marks}
-                  </td>
-                </tr>
-                {/* Choice Divider */}
-                <tr className="border-b border-black">
-                  <td className="border-r border-black py-1" colSpan={5}>
-                    <div className="flex items-center justify-center font-black text-[10px] tracking-widest">
-                      <div className="h-[0.5px] bg-black opacity-20 flex-1 mx-10"></div>
-                      (OR)
-                      <div className="h-[0.5px] bg-black opacity-20 flex-1 mx-10"></div>
-                    </div>
-                  </td>
-                </tr>
-                {/* Option B */}
-                <tr className="border-b border-black last:border-b-0">
-                  <td className="border-r border-black text-center font-bold p-2">
-                    (B)
-                  </td>
-                  <td className="border-r border-black p-3 text-left leading-relaxed">
-                    {q.options[1].text}
-                  </td>
-                  <td className="border-r border-black text-center font-medium">
-                    {q.options[1].co}
-                  </td>
-                  <td className="border-r border-black text-center font-medium">
-                    {q.options[1].bl}
-                  </td>
-                  <td className="text-center font-bold italic">
-                    {q.options[1].marks}
-                  </td>
-                </tr>
-              </React.Fragment>
-            ))}
+            {paperData.questions.map((q, index) => {
+              // ✅ OBJECTIVE MODE (no A/B, no OR)
+              if (isObjective) {
+                const { co, bl } = getRandomCOBL();
+
+                return (
+                  <tr key={index} className="border-b border-black">
+                    <td className="border-r border-black text-center font-bold">
+                      {index + 1}
+                    </td>
+
+                    <td className="border-r border-black p-3 text-left leading-relaxed">
+                      {q.text}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {co}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {bl}
+                    </td>
+
+                    <td className="text-center font-bold italic">2</td>
+                  </tr>
+                );
+              }
+
+              // ✅ SUBJECTIVE MODE (A / OR / B)
+              return (
+                <React.Fragment key={index}>
+                  {/* Option A */}
+                  <tr className="border-b border-black">
+                    <td
+                      className="border-r border-black text-center font-bold align-middle"
+                      rowSpan={3}
+                    >
+                      {q.id || index + 1}
+                    </td>
+
+                    <td className="border-r border-black text-center font-bold p-2">
+                      (A)
+                    </td>
+
+                    <td className="border-r border-black p-3 text-left leading-relaxed">
+                      {q.options?.[0]?.text}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {q.options?.[0]?.co}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {q.options?.[0]?.bl}
+                    </td>
+
+                    <td className="text-center font-bold italic">
+                      {q.options?.[0]?.marks}
+                    </td>
+                  </tr>
+
+                  {/* OR Divider */}
+                  <tr className="border-b border-black">
+                    <td colSpan={5}  className="h-5">
+                      <div className="flex items-center justify-center font-black text-[10px] tracking-widest">
+                        <div className="h-[0.5px] bg-black opacity-20 flex-1 mx-10"></div>
+                        (OR)
+                        <div className="h-[0.5px] bg-black opacity-20 flex-1 mx-10"></div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Option B */}
+                  <tr className="border-b border-black last:border-b-0">
+                    <td className="border-r border-black text-center font-bold p-2">
+                      (B)
+                    </td>
+
+                    <td className="border-r border-black p-3 text-left leading-relaxed">
+                      {q.options?.[1]?.text}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {q.options?.[1]?.co}
+                    </td>
+
+                    <td className="border-r border-black text-center font-medium">
+                      {q.options?.[1]?.bl}
+                    </td>
+
+                    <td className="text-center font-bold italic">
+                      {q.options?.[1]?.marks}
+                    </td>
+                  </tr>
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
 

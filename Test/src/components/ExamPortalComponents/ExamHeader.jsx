@@ -1,5 +1,6 @@
 import { Clock, LayoutGrid, Send, User } from "lucide-react";
-const ExamHeader = ({ formatTime, timeLeft, isSidebarOpen, onToggleSidebar, onOpenSubmit,exam }) => (
+import FlagIndicator from "./FlagIndicator"
+const ExamHeader = ({ formatTime, timeLeft,flags, isSidebarOpen, onToggleSidebar, onOpenSubmit,exam }) => (
   <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-50">
     <div className="flex items-center gap-6">
       <div className="flex flex-col">
@@ -9,6 +10,7 @@ const ExamHeader = ({ formatTime, timeLeft, isSidebarOpen, onToggleSidebar, onOp
       <div className="h-8 w-[1px] bg-slate-200 hidden sm:block" />
     </div>
     <div className="flex items-center gap-4">
+       <FlagIndicator count={flags} />
       <div className="flex items-center gap-2 bg-slate-100 px-3 py-2 rounded-xl border border-slate-200">
         <Clock size={16} className="text-blue-600" />
         <span className="font-mono font-bold text-slate-700 text-sm">{formatTime(timeLeft)}</span>

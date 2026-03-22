@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 // import MOCK_QUESTIONS from "./data/questions";
 import InstructionsView from "../views/InstructionsView";
@@ -16,7 +16,6 @@ import RightPanel from "../components/ExamPortalComponents/RightPanel";
 import { useRef } from "react";
 
 export default function ExamPortalView() {
-  const fullscreenAttempts = useRef(0);
   const { examId } = useParams();
   const location = useLocation();
   const examMeta = location.state?.examMeta;
@@ -58,19 +57,71 @@ export default function ExamPortalView() {
   const currentQuestion = questions[currentQuestionIdx];
 
   const [codingMarks, setCodingMarks] = useState({});
+  const [flags, setFlags] = useState(0);
+  const exitHandled = useRef(false);
+  const navigate = useNavigate();
 
   // -----------------------------
   // EFFECTS
   // -----------------------------
   useEffect(() => {
-    if (view !== "exam" || timeLeft === null) return;
+    if (view !== "exam") return;
 
-    const timer = setInterval(() => {
-      setTimeLeft((t) => Math.max(t - 1, 0));
-    }, 1000);
+    const checkFullscreen = async () => {
+     if (!document.fullscreenElement && !exitHandled.current) {
+        if (!attemptId) return; // 🔥 important
 
-    return () => clearInterval(timer);
-  }, [view, timeLeft]);
+        exitHandled.current = true;
+
+        alert("⚠️ You exited fullscreen.");
+
+        try {
+          const res = await fetch("http://localhost:5000/api/attempt/flag", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              attemptId,
+              type: "fullscreen_exit",
+            }),
+          });
+
+          const data = await res.json();
+
+          setFlags(data.flags);
+          // ✅ real DB value
+          console.log("The flags", data.flags);
+
+          // 🔥 AUTO SUBMIT AFTER 3 FLAGS
+          if (data.flags >= 10) {
+            alert("❌ Too many violations. Exam will be submitted.");
+            await submitExam();
+            return;
+          }
+        } catch (err) {
+          console.error("Flag save failed", err);
+        }
+
+        exitFullscreen();
+
+        setTimeout(() => {
+          navigate("/student");
+        }, 300);
+      }
+    };
+
+    const interval = setInterval(checkFullscreen, 500);
+
+    return () => clearInterval(interval);
+  }, [view, attemptId]);
+
+  useEffect(() => {
+    if (view === "exam") {
+      exitHandled.current = false;
+    }
+  }, [view]);
   // when timmer is over
   useEffect(() => {
     if (view === "exam" && timeLeft === 0) {
@@ -79,34 +130,19 @@ export default function ExamPortalView() {
   }, [timeLeft, view]);
 
   // exit blocker
-
   useEffect(() => {
-    const blockExit = () => {
-      if (
-        view === "exam" &&
-        !document.fullscreenElement &&
-        fullscreenAttempts.current < 3
-      ) {
-        fullscreenAttempts.current++;
-        enterFullscreen();
-      }
-    };
+    if (view !== "exam" || timeLeft === null) return;
 
-    document.addEventListener("fullscreenchange", blockExit);
-    return () => document.removeEventListener("fullscreenchange", blockExit);
-  }, [view]);
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0) return 0;
+        return prev - 1;
+      });
+    }, 1000);
 
-  // useeffect to check question type (mcq//coding)
+    return () => clearInterval(interval);
+  }, [view, timeLeft]);
 
-  // useEffect(() => {
-  //   if (currentQuestion.type === "mcq") {
-  //     setIsLeftSectionOpen(true);
-  //   }
-  // }, [currentQuestion.type]);
-
-  // -----------------------------
-  // HELPERS
-  // -----------------------------
   // auto submit helper
   const handleAutoSubmit = () => {
     submitExam();
@@ -150,7 +186,6 @@ export default function ExamPortalView() {
       console.error("Autosave failed", err);
     }
   };
-  console.log("The answers", answers);
 
   const getStatusColor = (idx) => {
     const qId = questions[idx].questionId;
@@ -196,6 +231,7 @@ export default function ExamPortalView() {
       });
 
       exitFullscreen();
+      
       setView("completed");
     } catch (err) {
       alert("Submission failed");
@@ -233,6 +269,7 @@ export default function ExamPortalView() {
 
       setAttemptId(data.attemptId);
       setQuestions(data.questions);
+      setFlags(data.flags || 0);
 
       if (data.resume) {
         setAnswers(data.answers || {});
@@ -312,6 +349,7 @@ export default function ExamPortalView() {
       <ExamHeader
         formatTime={formatTime}
         timeLeft={timeLeft}
+        flags={flags}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         onOpenSubmit={() => setShowSubmitModal(true)}

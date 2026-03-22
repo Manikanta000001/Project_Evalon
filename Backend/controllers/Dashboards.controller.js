@@ -19,6 +19,15 @@ exports.getTeacherDashboard = async (req, res) => {
 
     // ✅ get results instead of attempts
     const results = await Result.find().sort({ createdAt: 1 });
+//     const teacherExams = await Exam.find({
+//   createdBy: req.user.id
+// }).select("_id");
+
+// const examIds = teacherExams.map(exam => exam._id);
+
+// const results = await Result.find({
+//   examId: { $in: examIds }
+// }).sort({ createdAt: 1 });
 
     if (!results.length) {
       return res.json({
@@ -230,7 +239,7 @@ exports.getHodDashboard = async (req, res) => {
     const questionBanks = await QuestionBank.find()
       .populate("uploadedBy", "name")
       .sort({ createdAt: -1 })   // newest first
-      .limit(10);                // only 10 documents
+                    // only 10 documents
 
     const stats = {
       total: questionBanks.length,

@@ -390,7 +390,7 @@ const ApprovalPage = () => {
       {previewDoc && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center">
           <div
-            className={`w-[90%] h-[90%] rounded-xl overflow-hidden ${
+            className={`w-[70%] h-[90%] rounded-xl overflow-hidden ${
               darkMode ? "bg-slate-900" : "bg-white"
             }`}
           >
@@ -400,20 +400,14 @@ const ApprovalPage = () => {
               </h3>
 
               <div className="flex items-center gap-3">
-                <button
-                  onClick={handlePrint}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all shadow-sm"
-                >
-                  <Printer size={16} />
-                  Print
-                </button>
+
 
                 <button
                   onClick={() => window.open(previewDoc.fileUrl, "_blank")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-all shadow-sm"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all shadow-sm"
                 >
                   <Download size={16} />
-                  Download
+           
                 </button>
 
                 <button

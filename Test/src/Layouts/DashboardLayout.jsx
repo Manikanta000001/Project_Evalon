@@ -25,7 +25,9 @@ import {
 import SidebarItem from "../components/SidebarItem";
 
 export default function DashboardLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+  return window.innerWidth < 768; // collapse on mobile
+});
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState(null);
 
@@ -45,6 +47,21 @@ export default function DashboardLayout() {
     const storedUser = JSON.parse(localStorage.getItem("userdata"));
     setUser(storedUser);
   }, []);
+
+  useEffect(() => {
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setIsCollapsed(true);   // mobile → closed
+    } else {
+      setIsCollapsed(false);  // desktop → open
+    }
+  };
+
+  window.addEventListener("resize", handleResize);
+
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
   console.log("the user", user);
   if (!user) return null;
 
@@ -130,7 +147,7 @@ export default function DashboardLayout() {
               />
               <SidebarItem
                 icon={Activity}
-                label="Upload Section"
+                label="Approval Status"
                 active={path === "/teacher/bankstatus"}
                 collapsed={isCollapsed}
                 isDarkMode={isDarkMode}

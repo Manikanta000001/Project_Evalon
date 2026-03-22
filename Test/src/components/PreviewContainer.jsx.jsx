@@ -41,7 +41,7 @@ import {
 } from "lucide-react";
 
 export default function PreviewContainer({
-  isDark,
+  isDark,showSave,
   zoomLevel,
   children,
   triggerSave,triggerDownload,handlePrint,setZoomLevel, onExit
@@ -79,15 +79,16 @@ export default function PreviewContainer({
                 </button>
               </div>
               <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 hidden md:block mx-1" />
-  
-              <button
+              {showSave &&(<button
                 onClick={triggerSave}
                 className={`p-3 rounded-xl transition-all border ${isDark ? "bg-blue-500/10 border-blue-500/20 text-blue-400" : "bg-blue-50 border-blue-100 text-blue-600 shadow-sm"}`}
               >
                 <Save size={20} />
-              </button>
+              </button> )}
+  
+              
               <button
-                onClick={handlePrint}
+                onClick={triggerDownload}
                 className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/30 font-black text-[11px] uppercase hover:bg-blue-700 transition-all active:scale-95"
               >
                 <Download size={18} /> Export PDF

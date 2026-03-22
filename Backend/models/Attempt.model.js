@@ -38,7 +38,17 @@ const attemptSchema = new mongoose.Schema({
 
   submittedAt: {
     type: Date
-  }
+  },
+  flags: {
+  type: Number,
+  default: 0,
+},
+violations: [
+  {
+    type: { type: String },
+    timestamp: { type: Date, default: Date.now },
+  },
+],
 });
 attemptSchema.index({
   studentId: 1,

@@ -69,7 +69,7 @@ const StudentsPage = () => {
     const now = new Date();
     const start = new Date(exam.startAt);
     const end = new Date(exam.endAt);
-
+    if (exam.submissionRate === 100) return "completed";
     if (now < start) return "upcoming";
     if (now > end) return "completed";
     return "live";
@@ -148,7 +148,6 @@ const handleDownload = async () => {
 
   const confirmDelete = async () => {
     try {
-      console.log("trying to fetch delete");
 
       await fetch(`http://localhost:5000/api/exams/${examActive._id}`, {
         method: "DELETE",

@@ -22,7 +22,9 @@ import {
 import SidebarItem from "../components/SidebarItem";
 
 export default function StudentLayout() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(() => {
+    return window.innerWidth < 768; // collapse on mobile
+  });
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const navigate = useNavigate();
@@ -33,6 +35,21 @@ export default function StudentLayout() {
     else document.body.classList.remove("bg-slate-950");
   }, [isDarkMode]);
 
+
+    useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true);   // mobile → closed
+      } else {
+        setIsCollapsed(false);  // desktop → open
+      }
+    };
+  
+    window.addEventListener("resize", handleResize);
+  
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  
   const pageTitleMap = {
     "/student": "Dashboard",
     "/student/exams": "My Exams",

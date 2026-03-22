@@ -40,7 +40,7 @@ export default function CapsuleMediaLanding() {
         <div className="space-x-3 hidden md:flex">
           <Link to="/auth">
             <button className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
-              SIGN UP
+              ACTIVATE 
             </button>
           </Link>
           <Link to="/auth">

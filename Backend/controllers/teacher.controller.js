@@ -14,11 +14,18 @@ const exams = await Exam.find({ createdBy: teacherId })
       exams.map(async (exam) => {
 
         // 1️⃣ Eligible students (CORRECT FIELDS)
-        const totalStudents = await Student.countDocuments({
+
+        const studentFilter = {
   department: exam.department,
-  section: exam.section,
-  currentBatch: exam.year
-});
+  currentBatch: exam.year,
+};
+
+// 🔥 handle ALL properly
+if (!exam.section.includes("ALL")) {
+  studentFilter.section = { $in: exam.section };
+}
+
+const totalStudents = await Student.countDocuments(studentFilter);
 
         // 2️⃣ Submitted attempts
       const submitted = await Attempt.countDocuments({

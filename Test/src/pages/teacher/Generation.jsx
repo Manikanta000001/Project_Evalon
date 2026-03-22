@@ -202,9 +202,13 @@ export default function Generation() {
   const examTypes = [
     "Assignment 1",
     "Assignment 2",
+    "Assignment 3",
+    "Assignment 4",
+    "Assignment 5",
     "Mid 1",
     "Mid 2",
-    "Semester End",
+    "Objective 1",
+    "Objective 2",
   ];
 
   const COURSES_BY_REGULATION = {
@@ -255,7 +259,7 @@ export default function Generation() {
       pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      while (heightLeft > 0) {
+      while (heightLeft > pageHeight) {
         position -= pageHeight;
         pdf.addPage();
         pdf.addImage(dataUrl, "PNG", 0, position, pageWidth, imgHeight);
@@ -266,7 +270,6 @@ export default function Generation() {
     };
   };
   const handlePrint = () => {
-    console.log("clicked")
   window.print();
 };
 
@@ -308,7 +311,8 @@ export default function Generation() {
     try {
       const form = new FormData();
       form.append("file", file);
-      form.append("examType", formData.examType);
+      form.append("exam_type", formData.examType);
+      console.log(formData.examType)
 
       const res = await axios.post("http://127.0.0.1:8000/process", form);
 
@@ -758,9 +762,7 @@ const triggerSave = () => {
                     <h4 className="text-lg font-black text-emerald-500">
                       Assets Loaded
                     </h4>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase mt-1 tracking-widest">
-                      5 Sections / 20 Questions
-                    </p>
+                    
                   </div>
                   <button
                     onClick={() => {
@@ -868,6 +870,7 @@ const triggerSave = () => {
 
         <PreviewContainer
           isDark={isDark}
+           showSave = {true}
           zoomLevel={zoomLevel}
           setZoomLevel={setZoomLevel}
           triggerSave={triggerSave}
