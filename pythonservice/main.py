@@ -21,7 +21,7 @@ app.add_middleware(
 async def process_question_bank(
     file: UploadFile = File(...),
     # exam_type: str = Form("assignment")
-    exam_type: str = Form(...)
+    exam_type: str = Form(None)
     
 ):
     file_bytes = await file.read()
@@ -35,6 +35,13 @@ async def process_question_bank(
 
     extracted = extract_questions_from_docx(file_bytes)
     print("Exam type received:", exam_type)
+
+    # ✅ If no exam_type → only validate & parse
+    if not exam_type:
+        return {
+            "message": "File parsed successfully",
+            "valid": True
+        }
 
     # if exam_type == "assignment":
         # frontend sends unit

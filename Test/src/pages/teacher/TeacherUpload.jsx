@@ -101,6 +101,7 @@ const handleParse = async () => {
 
     const formDataToSend = new FormData();
     formDataToSend.append("file", file);
+  
 
     const response = await axios.post(
       `${import.meta.env.VITE_PYTHON_API_URL}/process`,
