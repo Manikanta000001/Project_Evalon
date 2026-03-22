@@ -109,7 +109,7 @@ const handleDownload = async () => {
   console.log("trying to fetch reports");
 
   const res = await fetch(
-    `http://localhost:5000/api/exams/${examActive._id}/reports?format=${reportFormat}`,
+    `${import.meta.env.VITE_API_URL}/api/exams/${examActive._id}/reports?format=${reportFormat}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -149,7 +149,7 @@ const handleDownload = async () => {
   const confirmDelete = async () => {
     try {
 
-      await fetch(`http://localhost:5000/api/exams/${examActive._id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/exams/${examActive._id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
