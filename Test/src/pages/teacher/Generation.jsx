@@ -357,7 +357,7 @@ const triggerSave = () => {
           questions: backendResult,
         };
 
-        await axios.post(`${import.meta.env.VITE_PYTHON_API_URL}/api/papers`, payload);
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/papers`, payload);
 
         setModal({ open: false });
         showActionFeedback("success", "Paper saved successfully");
