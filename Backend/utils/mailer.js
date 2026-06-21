@@ -11,7 +11,9 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 });
-
+transporter.verify()
+  .then(() => console.log("SMTP OK"))
+  .catch(console.error);
 console.log(process.env.EMAIL_USER);
 console.log(process.env.EMAIL_PASS);
 
